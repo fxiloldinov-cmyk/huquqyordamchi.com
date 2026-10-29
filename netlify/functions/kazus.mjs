@@ -103,7 +103,7 @@ export default async (req, context) => {
   try {
     let upstream = await request(true);
     if (upstream.status === 400) upstream = await request(false);
-    if (!upstream.ok) return providerError(upstream.status);
+    if (!upstream.ok) return await providerError(upstream);
     if (!upstream.body) return jsonError("AI xizmatidan javob oqimi kelmadi.", 502);
 
     return pipeGeminiStream(upstream, {

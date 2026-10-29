@@ -1,3 +1,5 @@
+import { providerError } from "../shared/common.mjs";
+
 // Netlify serverless function (v2, ESM): /api/chat
 // API kaliti faqat server muhitida saqlanishi kerak: GEMINI_API_KEY.
 // Modelni Netlify Environment Variables orqali GEMINI_MODEL bilan o'zgartirish mumkin.
@@ -138,7 +140,7 @@ export default async (req, context) => {
     }
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
   if (!apiKey) {
     return jsonError("AI xizmati sozlanmagan. Serverda GEMINI_API_KEY muhit o'zgaruvchisini kiriting.", 503);
   }
@@ -159,16 +161,7 @@ export default async (req, context) => {
       }),
     });
 
-    if (!upstream.ok) {
-      // Provider javobini mijozga qaytarmaymiz: unda ichki texnik ma'lumot bo'lishi mumkin.
-      console.error("Gemini provider returned status:", upstream.status);
-      return jsonError(
-        upstream.status === 429
-          ? "AI so'rovlar limiti vaqtincha tugadi. Birozdan keyin qayta urinib ko'ring."
-          : "AI xizmatida vaqtinchalik xatolik. Model sozlamalari va API kalitini tekshiring.",
-        upstream.status === 429 ? 429 : 502,
-      );
-    }
+    if (!upstream.ok) return await providerError(upstream);
     if (!upstream.body) return jsonError("AI xizmatidan javob oqimi kelmadi.", 502);
 
     const { readable, writable } = new TransformStream();

@@ -72,7 +72,7 @@ export async function guardJsonPost(req, context, { scope, perMinute, perHour })
 
 // ---- Gemini -----------------------------------------------------------------
 export function geminiConfig() {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
   const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   return { apiKey, model };
 }
@@ -91,14 +91,39 @@ export async function callGemini({ apiKey, model, body, stream = false }) {
   });
 }
 
-export function providerError(status) {
-  console.error("Gemini provider returned status:", status);
-  return jsonError(
-    status === 429
-      ? "AI so'rovlar limiti vaqtincha tugadi. Birozdan keyin qayta urinib ko'ring."
-      : "AI xizmatida vaqtinchalik xatolik. Birozdan keyin qayta urinib ko'ring.",
-    status === 429 ? 429 : 502,
-  );
+// Gemini xatosini foydalanuvchiga tushunarli, lekin xavfsiz ko'rinishda qaytaradi.
+// Kalit yoki ichki ma'lumot qaytarilmaydi — faqat HTTP kodi va Google'ning xato turi (masalan, API_KEY_INVALID).
+export async function providerError(upstream) {
+  const status = typeof upstream === "number" ? upstream : upstream.status;
+  let reason = "";
+  let googleStatus = "";
+  if (typeof upstream !== "number") {
+    try {
+      const data = await upstream.json();
+      googleStatus = String(data?.error?.status || "").replace(/[^A-Z_]/g, "").slice(0, 40);
+      const details = Array.isArray(data?.error?.details) ? data.error.details : [];
+      reason = String(details.map((d) => d?.reason).find(Boolean) || "").replace(/[^A-Z_]/g, "").slice(0, 40);
+      console.error("Gemini provider error:", status, googleStatus, reason, String(data?.error?.message || "").slice(0, 300));
+    } catch {
+      console.error("Gemini provider error:", status);
+    }
+  } else {
+    console.error("Gemini provider error:", status);
+  }
+  const code = [status, reason || googleStatus].filter(Boolean).join(" ");
+  let message;
+  if (status === 429) {
+    message = "AI so'rovlar limiti vaqtincha tugadi. Birozdan keyin qayta urinib ko'ring.";
+  } else if (reason === "API_KEY_INVALID" || (status === 400 && /API_KEY/.test(reason))) {
+    message = "AI kaliti noto'g'ri. Netlify'dagi GEMINI_API_KEY qiymatini Google AI Studio'dagi kalit bilan tekshiring.";
+  } else if (status === 403 || googleStatus === "PERMISSION_DENIED") {
+    message = "AI kalitiga ruxsat yo'q: Google AI Studio'da Gemini API yoqilmagan yoki kalit cheklangan.";
+  } else if (status === 404) {
+    message = "AI modeli topilmadi. Netlify'dagi GEMINI_MODEL qiymatini tekshiring (masalan, gemini-2.5-flash).";
+  } else {
+    message = "AI xizmatida vaqtinchalik xatolik. Birozdan keyin qayta urinib ko'ring.";
+  }
+  return jsonError(`${message} (kod: ${code})`, status === 429 ? 429 : 502);
 }
 
 // Javobdan matn va Google Search manbalarini (grounding) ajratib oladi.

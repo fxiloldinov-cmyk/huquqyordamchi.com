@@ -104,7 +104,7 @@ export default async (req, context) => {
       grounded = false;
       upstream = await request(false);
     }
-    if (!upstream.ok) return providerError(upstream.status);
+    if (!upstream.ok) return await providerError(upstream);
 
     const { text, sources } = extractCandidate(await upstream.json());
     const parsed = parseJson(text);

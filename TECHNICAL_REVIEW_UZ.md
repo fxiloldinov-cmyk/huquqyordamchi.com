@@ -167,3 +167,5 @@ Tekshiruv lex.uz (rasmiy matn va mundarija), gov.uz/advice.uz (davlat portali) v
 - Prompt to'ldirildi: nazariy savollarga ham javob berish, [1] izohlar va adabiyotlar ro'yxati, mavjudligi aniq bo'lmagan darsliklarni yozmaslik, namunadagi eskirgan raqamlarni (masalan, BHM) amaldagisi bilan almashtirish.
 - Namuna sifati bo'yicha eslatma: namunada BHM 300 000 so'm deb yozilgan — bu eskirgan qiymat; AI'ga amaldagi qiymatni ishlatish buyurilgan.
 - `maxOutputTokens`: chat 4096, qidiruv 4096, kazus 12000 (Gemini 2.5 "thinking" tokenlari ham shu limitga kiradi).
+- Netlify'dagi mavjud `API_KEY` o'zgaruvchisi zaxira sifatida o'qiladi: `GEMINI_API_KEY || API_KEY`.
+- AI xato xabarlari aniqroq: HTTP kodi va Google xato turi ko'rsatiladi (masalan, "kod: 400 API_KEY_INVALID"); kalit va ichki matn qaytarilmaydi. To'liq sabab Netlify function loglarida.
