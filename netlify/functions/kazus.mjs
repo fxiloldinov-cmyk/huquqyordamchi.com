@@ -1,10 +1,10 @@
-// Kazus ustaxonasi: talaba kazus yuboradi, AI uni o'qituvchi tasdiqlagan namuna shaklida,
+// Kazus ustaxonasi: talaba kazus yuboradi, AI uni loyihaga kiritilgan namuna shaklida,
 // talabaning o'z shaklida yoki standart tuzilmada yechadi.
 //   GET  /api/kazus  -> namunalar ro'yxati (faqat nomlari)
 //   POST /api/kazus  -> yechim (matn oqimi)
 import {
   guardJsonPost, jsonError, jsonResponse, geminiConfig, callGemini,
-  providerError, pipeGeminiStream, isAllowedOrigin,
+  providerError, pipeGeminiStream, isAllowedOrigin, LEGAL_RULES, sourceTail,
 } from "../shared/common.mjs";
 import { KAZUS_NAMUNALAR, STANDART_FORMAT, FANLAR } from "../shared/kazus-namunalar.mjs";
 
@@ -16,13 +16,13 @@ export const config = {
 const MAX_KAZUS = 6000;
 const MAX_FORMAT = 6000;
 
-const SYSTEM = `Siz O'zbekiston Respublikasi huquqi bo'yicha universitet o'qituvchisi darajasidagi o'quv yordamchisiz.
+const SYSTEM = LEGAL_RULES + `Siz O'zbekiston Respublikasi huquqi bo'yicha universitet o'qituvchisi darajasidagi o'quv yordamchisiz.
 Talaba yuborgan kazusni (huquqiy masalani) yechasiz.
 
 Qat'iy qoidalar:
 - Javobni o'zbek tilida (lotin yozuvida), akademik uslubda yozing.
 - Berilgan JAVOB SHAKLIGA aniq amal qiling: bo'limlar tartibi, sarlavhalar, raqamlash, uslub va chuqurlik namunadagidek bo'lsin.
-- Faqat amaldagi qonun hujjatlariga tayaning. Mehnat munosabatlari uchun 2022-yil 28-oktyabrdagi (2023-yil 30-apreldan amalda) Mehnat kodeksini, Konstitutsiya uchun 2023-yilgi tahririni qo'llang.
+- Voqea sanasiga tegishli qonun tahririga tayaning. Voqea sanasi noma’lum bo‘lsa, buni cheklov sifatida ayting. 2023-yil 30-apreldan oldingi mehnat munosabatlariga yangi Mehnat kodeksini avtomatik qo‘llamang. Konstitutsiyaning 2023-yilgi va oldingi tahrirlari moddalarini farqlang.
 - Google qidiruvidan foydalaning va normalarni imkon qadar lex.uz bo'yicha tekshiring.
 - Modda raqami, qism yoki band aniq ekaniga ishonchingiz komil bo'lmasa, uni uydirmang: "[lex.uz da tekshirilsin]" deb belgilang.
 - Sud amaliyoti va Plenum qarorlarini faqat aniq ma'lum bo'lsa keltiring, aks holda umuman keltirmang.
@@ -56,6 +56,11 @@ export default async (req, context) => {
   if (error) return error;
 
   const kazus = sanitize(body?.kazus, MAX_KAZUS + 1);
+  const studentAnswer = sanitize(body?.studentAnswer, 8001);
+  if (studentAnswer.length > 8000) return jsonError('Talaba javobi 8000 belgidan oshmasin.', 400);
+  const review = body?.task === 'review';
+  if (review && studentAnswer.length < 40) return jsonError('Tekshirish uchun javobingizni kiriting (kamida 40 belgi).', 400);
+  const eventDate = /^\d{4}-\d{2}-\d{2}$/.test(body?.eventDate || '') ? body.eventDate : 'ko‘rsatilmagan';
   if (kazus.length < 40) return jsonError("Kazus shartini to'liq yozing (kamida 40 belgi).", 400);
   if (kazus.length > MAX_KAZUS) return jsonError(`Kazus juda uzun (maksimal ${MAX_KAZUS} belgi).`, 400);
 
@@ -73,7 +78,7 @@ export default async (req, context) => {
     const sample = KAZUS_NAMUNALAR.find((n) => n.id === body?.namunaId)
       || KAZUS_NAMUNALAR.find((n) => n.fan === fan);
     if (!sample) return jsonError("Tanlangan namuna topilmadi. Standart tuzilmani tanlang.", 400);
-    formatBlock = "JAVOB SHAKLI: quyidagi o'qituvchi tasdiqlagan namunaviy yechimning tuzilishi, bo'limlari, uslubi va chuqurligiga aynan amal qiling.";
+    formatBlock = "JAVOB SHAKLI: quyidagi loyihaga kiritilgan namunaviy yechimning tuzilishi, bo'limlari, uslubi va chuqurligiga aynan amal qiling.";
     fewShot = [
       { role: "user", parts: [{ text: `Namunaviy kazus:\n${sample.kazus}` }] },
       { role: "model", parts: [{ text: sample.javob }] },
@@ -87,11 +92,11 @@ export default async (req, context) => {
 
   const contents = [
     ...fewShot,
-    { role: "user", parts: [{ text: `Fan: ${FANLAR[fan]}\n\n${formatBlock}\n\nYechilishi kerak bo'lgan kazus:\n"""\n${kazus}\n"""` }] },
+    { role: "user", parts: [{ text: `Fan: ${FANLAR[fan]}\nVoqea sanasi: ${eventDate}\nVazifa: ${review ? "Talaba javobini baholang: to‘g‘ri jihatlar, xato normalar, yetishmagan dalillar, asoslangan yaxshilangan yechim. Ball yoki bahoni o‘qituvchi bahosi deb bermang. Talaba javobi: " + studentAnswer : "Kazusni asoslantirib tahlil qiling"}\n\n${formatBlock}\n\nYechilishi kerak bo'lgan kazus:\n"""\n${kazus}\n"""` }] },
   ];
 
   const request = (withSearch) => callGemini({
-    apiKey, model, stream: true,
+    apiKey, model, stream: true, signal: req.signal,
     body: {
       system_instruction: { parts: [{ text: SYSTEM }] },
       contents,
@@ -102,19 +107,15 @@ export default async (req, context) => {
 
   try {
     let upstream = await request(true);
-    if (upstream.status === 400) upstream = await request(false);
+
     if (!upstream.ok) return await providerError(upstream);
     if (!upstream.body) return jsonError("AI xizmatidan javob oqimi kelmadi.", 502);
 
     return pipeGeminiStream(upstream, {
-      onEnd: (sources) => {
-        const lines = sources.slice(0, 8).map((s) => `- [${s.title.replace(/[\[\]]/g, "")}](${s.uri})`);
-        const src = lines.length ? `\n\n**Tekshirilgan manbalar:**\n${lines.join("\n")}` : "";
-        return `${src}\n\n*O'quv maqsadidagi AI yechim. Moddalarni lex.uz da tekshiring va o'qituvchingiz talablariga moslang.*`;
-      },
+      onEnd: (sources) => sourceTail(sources) + "\n\n*O‘quv tahlili. Topshirishdan oldin manbalar va topshiriq talablarini tekshiring.*",
     });
   } catch (e) {
-    console.error("Kazus backend error:", e?.message || "unknown");
+    console.error("Kazus backend error:", e?.name || "unknown");
     return jsonError("Server bilan bog'lanishda xatolik yuz berdi.", 502);
   }
 };

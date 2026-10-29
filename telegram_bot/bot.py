@@ -1,5 +1,5 @@
 """
-Huquq Kutubxonasi — O'zbekiston Qonunchiligi va AI Yurist Telegram Boti
+HuquqYordamchi — O'zbekiston Qonunchiligi va AI Yurist Telegram Boti
 Muallif: Sizning loyihangiz
 """
 
@@ -7,6 +7,11 @@ import os
 import re
 import html
 import logging
+import asyncio
+import time
+import json
+from pathlib import Path
+from collections import defaultdict, deque
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 from telegram.constants import ChatAction, ParseMode
@@ -21,7 +26,7 @@ from telegram.ext import (
 )
 
 # Muhit o'zgaruvchilarini yuklash (.env fayldan)
-load_dotenv()
+load_dotenv(Path(__file__).with_name(".env"))
 
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY", "")
@@ -105,116 +110,31 @@ async def send_ai_answer(update: Update, answer: str):
     """Javobni HTML bilan yuboradi; formatlash xatosi bo'lsa oddiy matn bilan qayta yuboradi."""
     for chunk in split_message(answer):
         try:
-            await update.message.reply_text(
+            await update.effective_message.reply_text(
                 markdown_to_telegram_html(chunk),
                 parse_mode=ParseMode.HTML,
                 disable_web_page_preview=True,
             )
         except BadRequest as e:
             logger.warning("HTML formatlash xatosi, oddiy matnda yuborilmoqda: %s", e)
-            await update.message.reply_text(chunk, disable_web_page_preview=True)
+            await update.effective_message.reply_text(chunk, disable_web_page_preview=True)
 
-# HAYOTIY VAZIYATLAR BAZASI
-SITUATIONS = {
-  "ish": {
-    "title": "💼 Ishdan noqonuniy bo'shatish",
-    "text": (
-      "💼 *ISHDAN NOQONUNIY BO'SHATISH*\n\n"
-      "Ish beruvchi xodimni faqat Mehnat kodeksida ko'rsatilgan asoslar bo'yicha bo'shata oladi.\n\n"
-      "📌 *Qadam-baqadam yo'l-yo'riq:*\n"
-      "1️⃣ *Buyruq nusxasini oling:* Ishdan bo'shatish buyrug'i va moddasini yozma talab qiling.\n"
-      "2️⃣ *Hisob-kitobni tekshiring:* Oxirgi ish kuni maosh va foydalanilmagan ta'til uchun kompensatsiya to'liq berilishi shart.\n"
-      "3️⃣ *Mehnat inspeksiyasiga murojaat:* Davlat mehnat inspeksiyasiga shikoyat qiling (ishonch telefoni: +998 71 200-06-00).\n"
-      "4️⃣ *Sudga da'vo bering:* Ishga tiklash bo'yicha fuqarolik sudiga buyruq nusxasi berilgan kundan 1 oy ichida murojaat qiling. Xodim sud xarajatlarini to'lamaydi.\n\n"
-      "📖 *Asos:* Mehnat kodeksi 162-modda (ish beruvchi tashabbusi bilan bekor qilish), 172-modda (hisob-kitob), 174-modda (qonunga xilof bekor qilish oqibatlari)."
-    )
-  },
-  "ish_haqi": {
-    "title": "💵 Ish haqi berilmayapti",
-    "text": (
-      "💵 *ISH HAQI VA TA'TIL PULI KECHIKKANDA*\n\n"
-      "Mehnat kodeksining 253-moddasi ish haqini to'lash muddatlarini belgilaydi.\n\n"
-      "📌 *Sizning huquqlaringiz:*\n"
-      "• Ish haqini kechiktirganlik uchun ish beruvchi moddiy javobgar bo'ladi (MK 334-modda).\n"
-      "• Hisoblangan, lekin to'lanmagan ish haqi bo'yicha sudga 'sud buyrug'i' berish haqida ariza berish mumkin — bu odatda oddiy da'vodan tezroq."
-    )
-  },
-  "oila": {
-    "title": "👨‍👩‍👧 Ajrashish va aliment",
-    "text": (
-      "👨‍👩‍👧 *AJRASHISH VA ALIMENT MIQDORI*\n\n"
-      "📌 *Aliment miqdori (Oila kodeksi 99-modda; majburiyat — 96-modda):*\n"
-      "• 1 nafar bola uchun — daromadning 1/4 qismi;\n"
-      "• 2 nafar bola uchun — 1/3 qismi;\n"
-      "• 3 va undan ortiq bola uchun — 1/2 qismi.\n"
-      "• Bir bola uchun eng kami — eng kam ish haqining 26,5% (2026-yil 1-sentabrdan 360 400 so'm).\n\n"
-      "📌 *Qayerga boriladi?*\n"
-      "Bolalar bor bo'lsa yoki mulkiy nizo bo'lsa — Fuqarolik ishlari bo'yicha sudga ariza beriladi. Aliment ajrashishdan oldin ham darhol undirilishi mumkin."
-    )
-  },
-  "jarima": {
-    "title": "🚔 Radar va YHXBB jarimalari",
-    "text": (
-      "🚔 *YHXBB JARIMALARIGA SHIKOYAT*\n\n"
-      "📌 *Muhim qoidalar:*\n"
-      "• Ma'muriy jarima qarori ustidan shikoyat muddati — 10 kun (2024-yildan).\n"
-      "• Qoidabuzarlik haqiqatda bo'lsa: 15 kun ichida jarimaning 50%, 30 kun ichida 70% to'lansa, qolganidan ozod qilinadi (MJtK 332-1-modda). Shikoyat qilinsa, chegirma qo'llanmaydi.\n"
-      "• Mashinani boshqa shaxs boshqargan yoki kamera xato qilgan bo'lsa, dalillar bilan shikoyat qiling."
-    )
-  },
-  "meros": {
-    "title": "📜 Meros va vasiyat",
-    "text": (
-      "📜 *MEROSNI QABUL QILISH TARTIBI*\n\n"
-      "📌 *Qat'iy muddat:* Meros ochilgan (vafot etgan) kundan e'tiboran 6 oy ichida notariusga ariza berish shart!\n"
-      "Meros huquqi guvohnomasi odatda 6 oy o'tgach beriladi. Muddat o'tib ketsa, uni sud orqali tiklashga to'g'ri keladi.\n\n"
-      "📌 *Navbat:* 1-navbatda — farzandlar, turmush o'rtoq va ota-ona teng ulushda meros oladilar (FK 1136-modda)."
-    )
-  },
-  "istemol": {
-    "title": "🛒 Sifatsiz tovar va qaytarish",
-    "text": (
-      "🛒 *ISTE'MOLCHILAR HUQUQLARI*\n\n"
-      "📌 *Asosiy huquqlar:*\n"
-      "• Maqbul sifatli nooziq-ovqat tovarini 10 kun ichida almashtirish, bir xili bo'lmasa pulni qaytarish mumkin (qonunning 18-moddasi; tovar ishlatilmagan, qadog'i saqlangan bo'lishi kerak).\n"
-      "• Nuqsonli tovar uchun almashtirish, bepul ta'mirlash, narxni kamaytirish yoki pulni qaytarishni talab qilish mumkin (13-modda).\n"
-      "• Xaridni shu sotuvchidan qilinganini isbotlashingiz kerak (chek, bank to'lovi).\n"
-      "📞 Raqobat qo'mitasi: 1159."
-    )
-  },
-  "uy": {
-    "title": "🏠 Uy ijarasi va shartnoma",
-    "text": (
-      "🏠 *TURAR JOY IJARASI*\n\n"
-      "• Jismoniy shaxslar o'rtasidagi ijara shartnomasi ijara.soliq.uz orqali ro'yxatga olinishi kerak (PQ-3741).\n"
-      "• Yozma shartnoma bo'lsa, uy egasi ijarachini muddatidan oldin asossiz chiqarib yubora olmaydi.\n"
-      "• Uyga kirishda jihozlar va kamchiliklar dalolatnoma (akt) qilinishi depozitni to'liq qaytarib olishga yordam beradi."
-    )
-  },
-  "kredit": {
-    "title": "💳 Bank kreditlari va garov",
-    "text": (
-      "💳 *BANK KREDITLARI VA QARZDORLIK*\n\n"
-      "• Moliyaviy qiyinchilik bo'lganda, bankka rasmiy ariza berib grafikni uzaytirishni (kredit ta'tili) so'rang.\n"
-      "• Sud kredit qarzini undirish haqida qaror chiqargach, undirilgan summaga foiz va neustoyka hisoblanmaydi (O'RQ-914, 2024).\n"
-      "• Garovdagi yagona uy-joy faqat sudning qonuniy qarori asosida undirilishi mumkin."
-    )
-  }
-}
-
-# KODEKSLAR BAZASI
-# (nomi, tavsif, lex.uz hujjat ID) — ID'lar lex.uz da tekshirilgan (2026-10-29)
-CODES = [
-  ("Konstitutsiya", "Davlatning bosh qonuni", "6445145"),
-  ("Mehnat kodeksi", "Ishga qabul, maosh, bo'shatish", "6257288"),
-  ("Oila kodeksi", "Nikoh, ajrashish, aliment", "104720"),
-  ("Fuqarolik kodeksi (1-qism)", "Mulk, majburiyatlar, shartnomalar", "111181"),
-  ("Fuqarolik kodeksi (2-qism)", "Ijara, kredit, meros", "180552"),
-  ("Ma'muriy javobgarlik kodeksi", "Jarimalar va qoidabuzarliklar", "97664"),
-  ("Jinoyat kodeksi", "Jinoiy javobgarlik va jazolar", "111453"),
-  ("Soliq kodeksi", "Soliqlar va imtiyozlar", "4674902"),
-  ("Uy-joy kodeksi", "Ko'chmas mulk va uy-joy huquqi", "106134")
-]
+# Shared catalogue with the website: edit data/legal.json and run npm run build.
+LEGAL = json.loads((Path(__file__).resolve().parents[1] / 'data' / 'legal.json').read_text(encoding='utf-8'))
+SITUATIONS = {item['id']: {'title': item['title'], 'text': item['title'] + '\n\n' + item['intro'] + '\n\n' + '\n\n'.join(str(i+1)+'. '+a+'\n'+b for i,(a,b) in enumerate(item['steps'])) + '\n\nAsos: ' + '; '.join(item['laws'])} for item in LEGAL['situations']}
+CODES = [(c[1],c[2],c[3]) for c in LEGAL['codes']]
+_user_hits = defaultdict(deque)
+_ai_slots = asyncio.Semaphore(4)
+def allow_question(user_id):
+    now=time.monotonic()
+    if len(_user_hits)>5000:
+        for key in list(_user_hits):
+            if not _user_hits[key] or now-_user_hits[key][-1]>3600: del _user_hits[key]
+    hits=_user_hits[user_id]
+    while hits and now-hits[0]>=3600: hits.popleft()
+    if len(hits)>=30 or sum(now-t<60 for t in hits)>=5: return False
+    hits.append(now)
+    return True
 
 # ASOSIY MENYU TUGMALARI
 def main_menu_keyboard():
@@ -231,7 +151,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.effective_user.first_name or "Foydalanuvchi"
     text = (
         f"Assalomu alaykum, {user_name}! 👋\n\n"
-        "Men — *«Huquq Kutubxonasi»* AI huquqiy axborot yordamchisiman.\n\n"
+        "Men — *«HuquqYordamchi»* AI huquqiy axborot yordamchisiman.\n\n"
         "🏛 *Sizga qanday yordam bera olaman?*\n"
         "• Hayotiy muammolar (ish, jarima, aliment, meros) bo'yicha qadam-baqadam qo'llanma beraman.\n"
         "• O'zbekiston qonunlari va kodekslarini sodda tushuntiraman.\n"
@@ -239,7 +159,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• Savollaringizga AI (sun'iy intellekt) orqali umumiy ma'lumot beraman.\n\n"
         "Quyidagi bo'limlardan birini tanlang:"
     )
-    await update.message.reply_text(text, parse_mode="Markdown", reply_markup=main_menu_keyboard())
+    await update.message.reply_text(markdown_to_telegram_html(text), parse_mode=ParseMode.HTML, reply_markup=main_menu_keyboard())
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
@@ -285,7 +205,10 @@ async def show_docs(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "2. Sifatsiz tovar uchun da'vo xati (pretenziya)\n"
         "3. Turar joy ijara shartnomasi\n"
         "4. Aliment undirish to'g'risida sud buyrug'i arizasi\n"
-        "5. O'z xohishi bilan bo'shash arizasi\n\n"
+        "5. O'z xohishi bilan bo'shash arizasi\n"
+        "6. Nikohdan ajratish da’vo arizasi\n"
+        "7. YHXX jarimasiga shikoyat\n"
+        "8. Firibgarlik alomatlari yuzasidan ariza\n\n"
         "🌐 To'liq generator veb-saytda mavjud!"
     )
     await update.message.reply_text(text, parse_mode="Markdown")
@@ -299,7 +222,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         key = query.data.replace("sit_", "")
         data = SITUATIONS.get(key)
         if data:
-            await query.message.reply_text(data["text"] + VERIFY_NOTE, parse_mode="Markdown")
+            await send_ai_answer(update, data["text"] + VERIFY_NOTE)
 
 # AI BILAN SAVOL-JAVOB (GEMINI INTEGRATSIYASI)
 async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -338,6 +261,9 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         )
         return
 
+    if not allow_question(update.effective_user.id):
+        await update.message.reply_text('So‘rovlar limiti tugadi. Keyinroq qayta urinib ko‘ring.')
+        return
     wait_msg = await update.message.reply_text("🔍 Savolingiz tahlil qilinmoqda, iltimos kuting...")
     await update.message.chat.send_action(ChatAction.TYPING)
 
@@ -345,15 +271,13 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
         from google.genai import types
         client = get_gemini_client()
         # Asinxron chaqiruv: bitta javob kutilayotganda bot boshqa foydalanuvchilarga ham javob beradi.
-        response = await client.aio.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=user_text,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_INSTRUCTION,
-                temperature=0.2,
-                max_output_tokens=1800,
-            ),
-        )
+        async with _ai_slots:
+            response = await asyncio.wait_for(client.aio.models.generate_content(
+                model=GEMINI_MODEL, contents=user_text,
+                config=types.GenerateContentConfig(system_instruction=SYSTEM_INSTRUCTION,
+                    temperature=0.1, max_output_tokens=3000,
+                    tools=[types.Tool(google_search=types.GoogleSearch())]),
+            ), timeout=50)
         answer = (response.text or "").strip() or "AI javobi bo'sh qaytdi. Iltimos, savolni boshqacha yozib ko'ring."
     except Exception as e:
         logger.error("Gemini API xatosi: %s", type(e).__name__)
@@ -362,6 +286,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
             "Qonunlarning rasmiy matni: https://lex.uz"
         )
 
+    answer += "\n\n⚠️ Umumiy AI ma’lumoti. Modda va xulosalarni Lex.uz’dagi tegishli tahrirda tekshiring."
     try:
         await wait_msg.delete()
     except Exception:
@@ -371,7 +296,7 @@ async def handle_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
     """Kutilmagan xatolarni loglaydi va foydalanuvchiga xabar beradi."""
-    logger.error("Kutilmagan xatolik: %s", context.error, exc_info=context.error)
+    logger.error("Kutilmagan xatolik turi: %s", type(context.error).__name__)
     if isinstance(update, Update) and update.effective_message:
         try:
             await update.effective_message.reply_text("⚠️ Texnik xatolik yuz berdi. Iltimos, qayta urinib ko'ring.")
@@ -385,8 +310,8 @@ def main():
         print("Iltimos, .env faylini oching va @BotFather dan olingan tokenni kiriting.\n")
         return
 
-    print("🚀 «Huquq Kutubxonasi» Telegram boti ishga tushmoqda...")
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    print("🚀 «HuquqYordamchi» Telegram boti ishga tushmoqda...")
+    app = ApplicationBuilder().token(BOT_TOKEN).concurrent_updates(8).build()
 
     app.add_handler(CommandHandler("start", start_command))
     app.add_handler(CommandHandler("help", help_command))

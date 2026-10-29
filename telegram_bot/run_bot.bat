@@ -1,7 +1,8 @@
 @echo off
+cd /d "%~dp0"
 chcp 65001 >nul
 echo ====================================================
-echo   Huquq Kutubxonasi - Telegram Botini Ishga Tushirish
+echo   HuquqYordamchi - Telegram Botini Ishga Tushirish
 echo ====================================================
 echo.
 

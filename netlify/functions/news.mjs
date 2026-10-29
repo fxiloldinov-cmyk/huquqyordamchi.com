@@ -49,16 +49,10 @@ export function parseRss(xml) {
 }
 
 async function fetchWithTimeout(url, ms) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), ms);
-  try {
-    return await fetch(url, {
-      signal: ctrl.signal,
-      headers: { "User-Agent": "HuquqKutubxonasi/1.0 (+RSS reader)", Accept: "application/rss+xml, application/xml, text/xml" },
-    });
-  } finally {
-    clearTimeout(t);
-  }
+  return fetch(url, {
+    signal: AbortSignal.timeout(ms),
+    headers: { "User-Agent": "HuquqYordamchi/10.0 (+RSS reader)", Accept: "application/rss+xml, application/xml, text/xml" },
+  });
 }
 
 export default async (req) => {

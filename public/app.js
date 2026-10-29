@@ -1,141 +1,5 @@
 // O'ZBEKISTON HUQUQIY BAZASI VA HAYOTIY VAZIYATLAR
-const SITUATIONS = [
-  { 
-    id: "ish", icon: "briefcase", title: "Ishdan noqonuniy bo'shatish", desc: "Asossiz bo'shatish, hisob-kitob va kompensatsiya olish", tag: "Mehnat kodeksi",
-    intro: "Ish beruvchi xodimni faqat Mehnat kodeksida aniq belgilangan asoslar bo'yicha va qat'iy tartibda ishdan bo'shatishga haqli. Noqonuniy bo'shatilgan taqdirda ishga tiklanish va majburiy bekor yurilgan vaqt uchun ish haqi undirish mumkin.",
-    steps: [
-      ["Buyruq nusxasini oling", "Ishdan bo'shatish haqidagi buyruq va uning asosini yozma ravishda talab qilib oling."],
-      ["Yakuniy hisob-kitobni tekshiring", "Oxirgi ish kuni barcha ish haqi, foydalanilmagan mehnat ta'tillari uchun kompensatsiya to'liq berilishi shart."],
-      ["Davlat mehnat inspeksiyasiga yozing", "Yashash yoki ish joyingizdagi Kambag'allikni qisqartirish va bandlik vazirligi huzuridagi Mehnat inspeksiyasiga shikoyat qiling."],
-      ["Sudga da'vo bilan chiqing", "Ishga tiklash to'g'risidagi da'vo bilan fuqarolik sudiga bo'shatish buyrug'ining nusxasi berilgan kundan boshlab 1 oy ichida murojaat qilinadi (boshqa mehnat nizolari — 3 oy). Xodim mehnat nizosi bo'yicha sud xarajatlarini to'lamaydi. Uzrli sabab bilan o'tkazib yuborilgan muddatni sud tiklashi mumkin."]
-    ],
-    laws: ["O'zbekiston Respublikasining Mehnat kodeksi (162-modda — ish beruvchi tashabbusi bilan bekor qilish; 172-modda — hisob-kitob; 174-modda — qonunga xilof bekor qilish oqibatlari)", "O'zbekiston Respublikasi Fuqarolik protsessual kodeksi"],
-    qs: ["Meni ogohlantirishsiz ishdan bo'shatishdi, bu qonuniymi?", "Bo'shatilganda ish beruvchi qanday to'lovlarni to'lashi shart?", "Ishga tiklash uchun sudga qanday ariza yoziladi?"]
-  },
-  { 
-    id: "ish_haqi", icon: "cash", title: "Maosh va ta'til puli kechikishi", desc: "Kechiktirilgan ish haqi, jarimalar va foizli kompensatsiya", tag: "Mehnat kodeksi",
-    intro: "Mehnat kodeksining 253-moddasi ish haqini to'lash muddatlarini, 334-moddasi esa ish haqini kechiktirganlik uchun ish beruvchining moddiy javobgarligini belgilaydi. Kompensatsiya miqdori va hisoblash tartibini amaldagi matndan tekshiring.",
-    steps: [
-      ["Ish beruvchiga yozma ariza bering", "Maosh kechikkani haqida yozma ariza yozing va nusxasini o'zingizda muhr bilan saqlang."],
-      ["Mehnat inspeksiyasi va prokuraturaga murojaat", "Natija bo'lmasa, Davlat mehnat inspeksiyasiga (ishonch telefoni: +998 71 200-06-00) yoki prokuraturaga murojaat qiling."],
-      ["Sud buyrug'i oling", "Hisoblangan, ammo to'lanmagan ish haqi bo'yicha fuqarolik sudiga 'sud buyrug'i' chiqarish uchun ariza bering (oddiy da'vodan ancha tez hal bo'ladi)."]
-    ],
-    laws: ["Mehnat kodeksi (253-modda — ish haqini to'lash muddatlari; 334-modda — kechiktirganlik uchun javobgarlik)", "Fuqarolik protsessual kodeksi (sud buyrug'i tartibi)"],
-    qs: ["Maosh 2 oy kechiksa qayerga shikoyat qilaman?", "Ish beruvchidan kechiktirilgan foizni qanday talab qilsa bo'ladi?"]
-  },
-  { 
-    id: "oila", icon: "users", title: "Ajrashish va aliment", desc: "Nikohdan ajralish tartibi, bolalar taqdiri va aliment miqdori", tag: "Oila kodeksi",
-    intro: "Oila kodeksiga asosan aliment miqdori: 1 bola uchun daromadning 1/4 qismi, 2 bola uchun 1/3 qismi, 3 va undan ko'p bola uchun 1/2 qismini tashkil qiladi. Bir bola uchun aliment mehnatga haq to'lash eng kam miqdorining 26,5 foizidan kam bo'lmasligi kerak (2026-yil 1-sentabrdan — oyiga 360 400 so'm). Aliment da'vosi bo'yicha davlat boji to'lanmaydi.",
-    steps: [
-      ["FHDYo yoki sudga ariza", "Voyaga yetmagan bolalar yoki mulkiy nizo bo'lsa — Fuqarolik ishlari bo'yicha sud orqali, o'zaro rozilik bo'lsa — FHDYo orqali ajralinadi."],
-      ["Aliment undirish arizasi", "Alimentni ajrashish jarayonida yoki undan mustaqil ravishda darhol sud buyrug'i tartibida undirish mumkin."],
-      ["MIB orqali ijro", "Sud qarori chiqqach, ijro varaqasi Majburiy ijro byurosiga (MIB) topshiriladi va to'lov nazoratga olinadi."]
-    ],
-    laws: ["O'zbekiston Respublikasi Oila kodeksi (96-modda — ta'minot berish majburiyati; 99-modda — aliment miqdori; 105-modda — miqdorni kamaytirish)", "Sud hujjatlari va boshqa organlar hujjatlarini ijro etish to'g'risida Qonun"],
-    qs: ["Aliment qanday hisoblanadi va eng kam miqdori qancha?", "Turmush o'rtog'im aliment to'lamasa qanday jazo bor?", "Ajrashganda uy va mol-mulk qanday bo'linadi?"]
-  },
-  { 
-    id: "jarima", icon: "car", title: "YHXBB ma'muriy jarimalari", desc: "Radar, kamera va nohaq jarimaga shikoyat qilish", tag: "Ma'muriy javobgarlik",
-    intro: "Foto va video qayd etish vositalari aniqlagan qoidabuzarliklar uchun javobgarlik MJtK 17-1-moddasida belgilangan. Ma'muriy huquqbuzarlik bo'yicha qaror ustidan 10 kun ichida (2024-yildan; avval 20 kun edi) yuqori turuvchi organga yoki sudga shikoyat qilish mumkin.",
-    steps: [
-      ["Qaror va fotosuratni tekshiring", "My.gov.uz yoki YHXBB ilovasi orqali fotosurat va vaqtni aniq tekshirib oling."],
-      ["10 kunlik muddatni o'tkazmang", "Qaror nusxasi olingan kundan boshlab 10 kun ichida shikoyat berish muddati bor."],
-      ["Shikoyat yoki chegirmali to'lovni tanlang", "Qaror noto'g'ri bo'lsa — shikoyat bering (my.gov.uz orqali ham mumkin). Qoidabuzarlik haqiqatda bo'lsa — MJtK 332-1-moddasiga ko'ra qarorni olgan kundan 15 kun ichida jarimaning 50 foizini yoki 30 kun ichida 70 foizini to'lab, qolganidan ozod bo'lish mumkin. Diqqat: qaror ustidan shikoyat qilinsa, bu chegirma qo'llanmaydi."]
-    ],
-    laws: ["Ma'muriy javobgarlik to'g'risidagi kodeks (17-1-modda — foto/video qayd etilgan qoidabuzarliklar; 332-1-modda — jarimani imtiyozli to'lash)", "O'RQ-884-son Qonun (25.12.2023) — shikoyat muddati 10 kunga qisqartirilgan"],
-    qs: ["Radar jarimasiga qanday e'tiroz bildirsa bo'ladi?", "Jarimalarni 50 foiz chegirma bilan to'lash tartibi qanday?", "Mening mashinam emas, boshqa odam haydagan bo'lsa nima qilaman?"]
-  },
-  { 
-    id: "meros", icon: "doc", title: "Meros va vasiyatnoma", desc: "Meros qabul qilish, 6 oylik muddat va qonuniy navbat", tag: "Fuqarolik kodeksi",
-    intro: "Meros fuqaro vafot etgan kundan ochiladi. Merosni qabul qilish muddati — meros ochilgan kundan e'tiboran 6 oy. Agar ushbu muddat o'tkazib yuborilsa, uni faqat sud orqali tiklashga to'g'ri keladi.",
-    steps: [
-      ["Notariusga ariza bering", "Meros qoldiruvchi oxirgi yashagan joydagi notarial idoraga murojaat qiling."],
-      ["6 oylik muddatga qat'iy e'tibor bering", "Aynan 6 oy ichida merosni qabul qilish haqida ariza berish shart."],
-      ["Qarindoshlik va mulk hujjatlarini taqdim eting", "FHDYo guvohnomalari va marhumning mulkiga tegishli kadastr, texpasport kabilar yig'iladi."],
-      ["Meros guvohnomasini oling", "6 oy o'tgach, notarius rasmiy 'Merosga bo'lgan huquq to'g'risida guvohnoma' beradi."]
-    ],
-    laws: ["Fuqarolik kodeksi, 2-qism (V bo'lim — vorislik huquqi, 1112-moddadan; 1136-modda — birinchi navbatdagi vorislar; 69-bob — merosni egallash, 1145-moddadan; 1146-modda — meros huquqi guvohnomasi)", "Notariat to'g'risida Qonun"],
-    qs: ["Meros olish uchun 6 oylik muddat o'tib ketsa nima bo'ladi?", "Vasiyatnoma bo'lmasa qonun bo'yicha kimlar birinchi navbatda merosxo'r hisoblanadi?", "Merosdan voz kechish mumkinmi?"]
-  },
-  { 
-    id: "istemol", icon: "cart", title: "Sifatsiz tovar va xizmat", desc: "Tovarni qaytarish, almashtirish va pulni qaytarib olish", tag: "Iste'molchilar huquqlari",
-    intro: "Iste'molchi maqbul sifatli nooziq-ovqat tovarini sotib olgan kundan boshlab 10 kun ichida almashtirishga, bir xil tovar bo'lmasa pulni qaytarishga haqli (tovar ishlatilmagan, qadog'i va tovar ko'rinishi saqlangan bo'lishi kerak — 18-modda). Nuqsonli tovar uchun almashtirish, bepul ta'mirlash, narxni kamaytirish yoki shartnomani bekor qilib pulni qaytarishni talab qilish mumkin (13-modda).",
-    steps: [
-      ["Chek yoki to'lov tasdig'ini oling", "Kvitansiya, bank ilovasi kvitansiyasi yoki guvohlar dalil bo'ladi."],
-      ["Sotuvchiga yozma da'vo (pretenziya) bering", "Talabingizni 2 nusxada yozing, bitta nusxasiga qabul qilib olganlik haqida imzo qo'ydiring."],
-      ["Raqobat qo'mitasiga murojaat qiling", "Sotuvchi rad etsa, Raqobatni rivojlantirish va iste'molchilar huquqlarini himoya qilish qo'mitasiga (tel.: 1159) murojaat qiling."],
-      ["Sudga ariza bering", "Sudga murojaat qilish huquqi qonunning 4-moddasida kafolatlangan. Davlat boji imtiyozlarini da'vo berishdan oldin aniqlang."]
-    ],
-    laws: ["\"Iste'molchilarning huquqlarini himoya qilish to'g'risida\"gi Qonun, 26.04.1996, 221-I (13-modda — nuqsonli tovar; 14-modda — almashtirish muddati; 15-modda — bepul ta'mirlash; 18-modda — maqbul sifatli tovarni almashtirish)"],
-    qs: ["Kiyinish yoki telefonni 10 kun ichida qaytarib berish mumkinmi?", "Cheki yo'q tovarni qaytarsa bo'ladimi?", "Kafolat muddati davomida ta'mirlanmasa nima qilish kerak?"]
-  },
-  { 
-    id: "uy", icon: "home", title: "Turar joy ijarasi va mulk", desc: "Ijara shartnomasi, depozitni qaytarish va ijarachi huquqlari", tag: "Fuqarolik kodeksi",
-    intro: "Jismoniy shaxslar o'rtasidagi ko'chmas mulk ijara shartnomasi soliq organlarida (ijara.soliq.uz) hisobga qo'yilishi kerak (PQ-3741, 25.05.2018). Uy-joy ijarasi Fuqarolik kodeksining 35-bobida (600–616-moddalar) tartibga solinadi; yozma shartnoma va topshirish dalolatnomasi nizoda asosiy dalil bo'ladi.",
-    steps: [
-      ["Rasmiy shartnoma tuzing", "ijara.soliq.uz portali orqali shartnomani ro'yxatdan o'tkazing."],
-      ["Dalolatnoma (Akt) imzolang", "Uyga kirishda mavjud jihozlar va kamchiliklarni akt orqali rasmiylashtiring va rasmga oling."],
-      ["To'lovlarni bank orqali qiling", "Naqd bermasdan, kartadan kartaga o'tkazib, izohida 'falon oy ijarasi' deb yozib boring."]
-    ],
-    laws: ["Fuqarolik kodeksi, 2-qism, 35-bob (600–616-moddalar — uy-joyni ijaraga berish)", "Uy-joy kodeksi", "Prezidentning PQ-3741-son qarori (25.05.2018)"],
-    qs: ["Uy egasi depozitni qaytarmayapti, nima qilsam bo'ladi?", "Shartnomasiz yashaganda qanday xavf bor?", "Ijarachini to'satdan chiqarib yuborish mumkinmi?"]
-  },
-  { 
-    id: "kredit", icon: "credit", title: "Bank kreditlari va foizlar", desc: "Muddati o'tgan qarz, garov mulki va bank nizolari", tag: "Bank qonunchiligi",
-    intro: "Bank qarzdorlikni undirishda qonun doirasidan chiqa olmaydi. Qisman to'lovda avval muddati o'tgan asosiy qarz va foiz, keyin joriy foiz va qarz, so'ngra neustoyka uziladi (O'RQ-914). Moliyaviy qiyinchilikda bankdan to'lov grafigini qayta ko'rib chiqishni (restrukturizatsiya) so'rash mumkin.",
-    steps: [
-      ["Shartnoma shartlarini o'rganing", "Foiz, penya va jarima miqdorlarini diqqat bilan o'qing. Sud kredit qarzini undirish to'g'risida qaror chiqargach, undirilgan summaga foiz va neustoyka hisoblash to'xtatiladi (FK, O'RQ-914, 27.02.2024)."],
-      ["Bankka yozma ariza bering", "Muammoli holat haqida ma'lum qilib, kredit to'lov grafigini uzaytirishni (kredit ta'tili) so'rang."],
-      ["Markaziy bankka murojaat qiling", "Bank huquqlaringizni buzsa, Markaziy bankning iste'molchilar huquqlarini himoya qilish xizmatiga shikoyat bering."]
-    ],
-    laws: ["\"Banklar va bank faoliyati to'g'risida\"gi Qonun", "Fuqarolik kodeksi (garov, qarz va kredit shartnomalari)", "O'RQ-914-son Qonun (27.02.2024)"],
-    qs: ["Kreditni to'lay olmasam garovdagi uyimni tortib olishadimi?", "Kredit bo'yicha penya qancha bo'lishi mumkin?", "Kafillikdan voz kechish mumkinmi?"]
-  },
-  { 
-    id: "biznes", icon: "building", title: "Biznes ochish: YaTT yoki MChJ", desc: "Ro'yxatdan o'tish, soliq rejimini tanlash va qonuniy faoliyat", tag: "Tadbirkorlik",
-    intro: "Yakka tartibdagi tadbirkor (YaTT) sifatida ro'yxatdan o'tish yoki MChJ ta'sis etish onlayn (my.gov.uz / birdarcha) amalga oshirilishi mumkin. Faoliyat turiga qarab to'g'ri soliq rejimini tanlash biznes xavfsizligining garovidir.",
-    steps: [
-      ["Tashkiliy-huquqiy shaklni tanlang", "Bitta o'zingiz xizmat ko'rsatsangiz — YaTT, sheriklar bilan katta loyiha qilsangiz — MChJ."],
-      ["Onlayn ro'yxatdan o'ting", "Birdarcha (my.gov.uz) orqali ariza topshiring va davlat ro'yxatidan o'tganlik guvohnomasini oling."],
-      ["Soliq rejimini belgilang", "Aylanmadan olinadigan soliq yoki umumiy soliq tizimini tanlang (stavka va muddatlarni Soliq kodeksidan yoki soliq.uz dan tekshiring)."]
-    ],
-    laws: ["O'zbekiston Respublikasi Soliq kodeksi", "\"Tadbirkorlik faoliyati erkinligining kafolatlari to'g'risida\"gi Qonun"],
-    qs: ["YaTT va MChJ ning farqi nima?", "O'zini o'zi band qilgan shaxslar qanday soliq to'laydi?", "Biznes hisob raqamini qanday ochiladi?"]
-  },
-  { 
-    id: "talim", icon: "school", title: "Ta'lim krediti va kontrakt", desc: "Talabalar uchun imtiyozli ta'lim krediti va talabalik huquqlari", tag: "Ta'lim huquqi",
-    intro: "Kunduzgi ta'limda o'qiydigan xotin-qizlar, kambag'al oilalar reyestridagi a'lochi talabalar (GPA 3.5+) va ayrim boshqa toifalar uchun ta'lim krediti foizlari Ta'lim kreditlarini moliyalashtirish jamg'armasi hisobidan to'liq qoplanadi — talaba uchun 0%. Shartlar har yili o'zgarishi mumkin.",
-    steps: [
-      ["OTM bilan shartnoma oling", "To'lov-kontrakt shartnomasini ta'lim muassasasidan oling."],
-      ["Bankka ariza bering", "Ta'lim krediti beruvchi bankka murojaat qiling; amaldagi ariza tartibini bank yoki my.gov.uz orqali aniqlang."],
-      ["Kafillik va hujjatlar", "Pasport, kontrakt va oila daromadi to'g'risidagi ma'lumotlarni ilova qiling."]
-    ],
-    laws: ["Vazirlar Mahkamasining ta'lim kreditlarini ajratish tartibi to'g'risidagi Qarorlari"],
-    qs: ["Qizlar uchun foizsiz ta'lim krediti qanday olinadi?", "Kontrakt to'lovini bo'lib to'lash mumkinmi?", "Akademik ta'tildan qaytish qoidalari qanday?"]
-  },
-  { 
-    id: "pasport", icon: "shield", title: "Pasport, propiska va xorij", desc: "ID-karta olish, erkin propiska va xorijga chiqish pasporti", tag: "Davlat xizmatlari",
-    intro: "Xorijga chiqish biometrik pasporti 25 yoshdan oshganlarga 10 yilga, 1–25 yoshdagilarga 5 yilga, 1 yoshgacha bolalarga 2 yilga beriladi. Davlat boji: 16 yoshdan — 1 BHM, 16 yoshgacha — BHMning 80 foizi.",
-    steps: [
-      ["Davlat xizmatlari markaziga boring", "Yoki my.gov.uz orqali navbatga yoziling."],
-      ["Davlat bojini to'lang", "16 yoshdan katta — 1 BHM, 16 yoshgacha — 0,8 BHM; portal orqali arizada chegirma bor."],
-      ["Pasportni qabul qilib oling", "Pasport ariza va to'lovdan keyin 10 ish kuni ichida tayyorlanadi (portal orqali — biometrik ma'lumot topshirilgan kundan)."]
-    ],
-    laws: ["\"O'zbekiston Respublikasida fuqarolarni ro'yxatga olish tartibi to'g'risida\"gi Qonun"],
-    qs: ["Toshkentdan uy olmasdan ham doimiy propiskaga o'tsa bo'ladimi?", "Qizil pasport yo'qolsa nima qilish kerak?"]
-  },
-  { 
-    id: "kiber", icon: "lock", title: "Kiberfiribgarlik va karta o'g'irligi", desc: "Bank kartasidan noqonuniy pul yechilganda nima qilish kerak?", tag: "Jinoyat qonunchiligi",
-    intro: "Bank kartasidan ruxsatsiz pul yechib olinganda, zudlik bilan kartani bloklash va 102 raqamiga yoki ichki ishlar organlariga xabar berish kerak — kechiksangiz pul tezda chet elga o'tkazib yuborilishi mumkin. Shubhali havolalarga (fishing) kirmaslik eng asosiy xavfsizlik chorasidir.",
-    steps: [
-      ["Kartani darhol bloklang", "Bank mobil ilovasi orqali yoki bank call-markaziga qo'ng'iroq qilib bloklang."],
-      ["Pul o'tkazmasi chekini saqlang", "Qaysi hisobga yoki kartaga pul o'tganini aniqlab, PDF chekini yuklab oling."],
-      ["Kiberxavfsizlik bo'limiga ariza bering", "Yashash joyingizdagi IIBga yoki elektron shaklda ariza yuboring."]
-    ],
-    laws: ["O'zbekiston Respublikasi Jinoyat kodeksi (168-modda — firibgarlik, 169-modda — o'g'rilik, 278-2-modda — kompyuter axborotidan ruxsatsiz foydalanish)"],
-    qs: ["Karta raqamimni aytib pulimni oldirib qo'ydim, qaytarsa bo'ladimi?", "Bank kiberhujum vaqtida pulni qaytarishga majburmi?"]
-  }
-];
+const SITUATIONS = HK_LEGAL.situations;
 
 // SVG ICONS (CLEAN MINIMALIST OUTLINE)
 function getSvgIcon(type) {
@@ -157,26 +21,13 @@ function getSvgIcon(type) {
 }
 
 // [qisqartma, nomi, tavsif, lex.uz hujjat ID] — ID'lar lex.uz da tekshirilgan (2026-10-29; FK 2-qism qo‘shildi).
-const CODES = [
-  ["K", "Konstitutsiya", "Davlatning bosh qonuni: inson qadri, huquq va erkinliklar.", "6445145"],
-  ["MK", "Mehnat kodeksi", "Ishga qabul, maosh, mehnat ta'tili, bo'shatish va xodim kafolatlari.", "6257288"],
-  ["OK", "Oila kodeksi", "Nikoh, ajrashish, aliment, bolalar tarbiyasi va ota-onalik huquqi.", "104720"],
-  ["FK", "Fuqarolik kodeksi (1-qism)", "Umumiy qoidalar, mulk huquqi, majburiyatlar va shartnomalar.", "111181"],
-  ["FK-2", "Fuqarolik kodeksi (2-qism)", "Oldi-sotdi, ijara, uy-joy ijarasi, kredit va vorislik (meros).", "180552"],
-  ["MJ", "Ma'muriy javobgarlik kodeksi", "Yo'l harakati, jarimalar va ma'muriy huquqbuzarliklar.", "97664"],
-  ["JK", "Jinoyat kodeksi", "Jinoiy javobgarlik, jazolar va jinoyat turlari.", "111453"],
-  ["SK", "Soliq kodeksi", "Jismoniy va yuridik shaxslar soliqlari, imtiyozlar va hisobotlar.", "4674902"],
-  ["UK", "Uy-joy kodeksi", "Ko'chmas mulk, xonadondan foydalanish va kommunal munosabatlar.", "106134"],
-  ["FPK", "Fuqarolik protsessual kodeksi", "Sudga da'vo berish, dalillar, sud majlislari va qarorlar.", "3517334"],
-  ["IPK", "Iqtisodiy protsessual kodeksi", "Tadbirkorlar va korxonalar o'rtasidagi iqtisodiy nizolar.", "3523891"]
-];
+const CODES = HK_LEGAL.codes;
 const lexUrl = (id, title) => id ? `https://lex.uz/docs/${id}` : `https://lex.uz/search/all?searchtitle=${encodeURIComponent(title)}`;
 
-// TAYYOR HUJJAT SHABLONLARI (DOC BUILDER)
 const DOC_TEMPLATES = {
   ish_haqi: {
     title: "To'lanmagan ish haqini talab qilish arizasi",
-    desc: "Mehnat kodeksining 253 va 334-moddalari asosida hisoblangan maosh va kompensatsiya talabi.",
+    desc: "Mehnat kodeksining 253 va 333-moddalari asosida hisoblangan maosh va kompensatsiya talabi.",
     fields: [
       { id: "employer", label: "Ish beruvchi tashkilot nomi", placeholder: "«Falonchi MChJ» rahbari A.B.ga", type: "text" },
       { id: "applicant", label: "Sizning F.I.O.", placeholder: "Karimov Sherzod Aliyevich", type: "text" },
@@ -198,16 +49,16 @@ Men, ${data.applicant || "[F.I.O.]"}, ${data.employer || "[Tashkilot]"} da ${dat
 O'zbekiston Respublikasi Mehnat kodeksining 253-moddasiga muvofiq, ish beruvchi xodimga belgilangan muddatlarda ish haqini to'liq to'lashi shart.
 Biroq, bugungi kunga qadar menga ${data.period || "[Tegishli davr]"} uchun jami ${data.amount || "[Summa]"} so'm miqdoridagi ish haqi to'lab berilmadi.
 
-Shuningdek, Mehnat kodeksining 334-moddasiga ko'ra, ish beruvchi ish haqini to'lashni kechiktirganlik uchun moddiy javobgar bo'ladi.
+Shuningdek, Mehnat kodeksining 333-moddasiga ko'ra, ish beruvchi ish haqini to'lashni kechiktirganlik uchun moddiy javobgar bo'ladi.
 
 Yuqoridagilardan kelib chiqib, SIZDAN:
 1. Menga tegishli bo'lgan ${data.amount || "[Summa]"} so'm miqdoridagi ish haqini to'liq to'lab berishingizni;
 2. Kechiktirilgan har bir kun uchun qonunda belgilangan foiz (kompensatsiya) miqdorini hisoblab to'lashingizni so'rayman.
 
-Ushbu talab 3 (uch) ish kuni ichida ixtiyoriy ravishda bajarilmagan taqdirda, Davlat mehnat inspeksiyasi, Prokuratura organlariga hamda Fuqarolik ishlari bo'yicha sudga sud buyrug'i chiqarish to'g'risida ariza bilan murojaat qilishimni ma'lum qilaman.
+Talabim bajarilmagan taqdirda, vakolatli organ yoki sudga tegishli protsessual tartibda murojaat qilish huquqimdan foydalanaman.
 
 Imzo: _______________ (${data.applicant || "Xodim"})
-Sana: ${new Date().toISOString().slice(0, 10)}
+Sana: ${localDate()}
 `
   },
 
@@ -236,14 +87,14 @@ Tovar foydalanish jarayonida quyidagi jiddiy nuqsonlar aniqlandi:
 ${data.defect || "[Nosozlik tafsiloti]"}.
 
 O'zbekiston Respublikasi «Iste'molchilarning huquqlarini himoya qilish to'g'risida»gi Qonunining 13-moddasiga binoan, nuqsonli tovar sotilgan iste'molchi shartnomani bekor qilib, to'langan pulni qaytarishni va zararni qoplashni talab qilishga haqli.
-Talabimni qonunda belgilangan muddatlarda (almashtirish uchun — 14-moddaga ko'ra 7 kun) ko'rib chiqishingizni so'rayman.
+Talabimni qonunda nazarda tutilgan tartibda ko‘rib chiqib, qabul qilingan qaror va uning asoslarini menga yozma ravishda yuborishingizni so‘rayman.
 
 Yuqoridagilardan kelib chiqib:
 1. Sifat talablariga javob bermaydigan ${data.product || "[Tovar]"} ni qabul qilib olishingizni;
 2. Mazkur tovar uchun to'langan ${data.price || "[Summa]"} so'm pul mablag'ini menga to'liq qaytarishingizni talab qilaman.
 
 Imzo: _______________ (${data.buyer || "Iste'molchi"})
-Sana: ${new Date().toISOString().slice(0, 10)}
+Sana: ${localDate()}
 `
   },
 
@@ -260,7 +111,7 @@ Sana: ${new Date().toISOString().slice(0, 10)}
     generate: (data) => `
                  TURAR JOYNI IJARAGA BERISH SHARTNOMASI
 
-Toshkent shahri                                  «____» __________ 2026-yil
+${data.city || "[Shahar/tuman]"}                                  ${localDate()}
 
 Bir tomondan fuqaro ${data.landlord || "[Uy egasining F.I.O.]"} (keyingi o'rinlarda «Ijaraga beruvchi»), ikkinchi tomondan fuqaro ${data.tenant || "[Ijaraga oluvchining F.I.O.]"} (keyingi o'rinlarda «Ijarachi») quyidagilar haqida mazkur shartnomani tuzdilar:
 
@@ -303,13 +154,13 @@ O'zbekiston Respublikasi Oila kodeksining 96 va 99-moddalariga muvofiq, Sudingiz
 Qarzdor ${data.debtor || "[Qarzdor]"} dan voyaga yetmagan farzandimiz ta'minoti uchun har oyda uning barcha turdagi daromadlarining 1/4 qismi miqdorida aliment undirish to'g'risida SUD BUYRUG'I chiqarishingizni so'rayman.
 
 Imzo: _______________ (${data.claimant || "Ariza beruvchi"})
-Sana: ${new Date().toISOString().slice(0, 10)}
+Sana: ${localDate()}
 `
   },
 
   mehnat_boshash: {
     title: "O'z xohishi bilan ishdan bo'shash to'g'risida ariza",
-    desc: "Mehnat kodeksining 161-moddasiga muvofiq (xodimning tashabbusi bilan) mehnat shartnomasini bekor qilish.",
+    desc: "Mehnat kodeksining 160-moddasiga muvofiq (xodimning tashabbusi bilan) mehnat shartnomasini bekor qilish.",
     fields: [
       { id: "director", label: "Tashkilot rahbari lavozimi va F.I.O.", placeholder: "«Korxona nomi» Bosh direktoriga", type: "text" },
       { id: "employee", label: "Xodimning F.I.O.", placeholder: "Sodiqov Dilshod Farxodovich", type: "text" },
@@ -324,27 +175,35 @@ KIMDAN: ${data.dept || "[Bo'lim va lavozim]"}
                                 ARIZA
         (Mehnat shartnomasini xodimning tashabbusiga ko'ra bekor qilish haqida)
 
-O'zbekiston Respublikasi Mehnat kodeksining 161-moddasiga muvofiq, men bilan tuzilgan mehnat shartnomasini o'z xohishimga ko'ra ${data.last_day || "[Oxirgi ish kuni]"} kunidan boshlab bekor qilishingizni so'rayman.
+O'zbekiston Respublikasi Mehnat kodeksining 160-moddasiga muvofiq, men bilan tuzilgan mehnat shartnomasini o'z xohishimga ko'ra ${data.last_day || "[Oxirgi ish kuni]"} kunidan boshlab bekor qilishingizni so'rayman.
 
 Imzo: _______________ (${data.employee || "Xodim"})
-Sana: ${new Date().toISOString().slice(0, 10)}
+Sana: ${localDate()}
 `
   }
 };
 
+Object.assign(DOC_TEMPLATES, HKExtraTemplates);
+
+function localDate() {
+  return new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Tashkent', year:'numeric', month:'2-digit', day:'2-digit'}).format(new Date());
+}
 const $ = (s) => document.querySelector(s);
 let mode = "citizen";
 let history = [];
 let busy = false;
-let currentDoc = "ish_haqi";
+let currentDoc = "nikoh_ajrashish";
+const docDrafts = {};
+let chatController = null;
 
 // VIEW SWITCHER
-function show(view) {
+function show(view, track=true) {
   document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
   const target = $("#view-" + view);
   if (target) target.classList.add("active");
   document.body.classList.toggle("chat-open", view === "chat");
   window.scrollTo(0, 0);
+  if(track) window.history.replaceState(null,"", "#"+view);
 }
 
 document.addEventListener("click", (e) => {
@@ -360,9 +219,7 @@ document.addEventListener("click", (e) => {
 
 // RENDER SITUATIONS WITH CLEAN ICONS
 // O'zbek apostroflarining barcha shakllarini (' ‘ ’ ʻ ʼ `) bittaga keltiradi.
-function norm(value) {
-  return String(value).toLocaleLowerCase("uz").replace(/[‘’ʻʼ`´]/g, "'").replace(/\s+/g, " ").trim();
-}
+function norm(value) { return HKCore.norm(value); }
 
 function renderSituations(filter = "") {
   const f = norm(filter);
@@ -400,7 +257,7 @@ $("#codes").innerHTML = CODES.map(([n, t, d, id]) => `
     </div>
     <div class="code-links">
       <a href="${lexUrl(id, t)}" target="_blank" rel="noopener">Rasmiy matn <span aria-hidden="true">↗</span></a>
-      <button type="button" data-ask="${escapeHtml(t)} haqida oddiy tilda tushuntirib bering: u nimalarni tartibga soladi va oddiy fuqaro uchun eng muhim 3 ta qoidasi qaysi?">AI tahlili</button>
+      <button type="button" data-explain="${id}">Sodda tilda tushuntirish</button>
     </div>
   </article>
 `).join("");
@@ -417,7 +274,7 @@ function openSituation(id) {
     <p class="detail-intro">${s.intro}</p>
     <div class="verify-note">⚠️ Bu umumiy ma'lumot, yurist tomonidan tasdiqlanmagan. Modda raqamlari, muddatlar, summalar va telefon raqamlarini <a href="https://lex.uz" target="_blank" rel="noopener">lex.uz</a> dagi amaldagi tahrir bilan tekshiring.</div>
     <ul class="steps-list">${s.steps.map(([b, t]) => `<li><b>${b}</b><p>${t}</p></li>`).join("")}</ul>
-    <div class="laws-card">
+    <div class="laws-card">${(s.sourceUrls||[]).map(u=>`<a href="${u}" target="_blank" rel="noopener">Rasmiy manba ↗</a>`).join(" · ")}
       <h4>Asosiy qonunchilik hujjatlari:</h4>
       <ul>${s.laws.map((l) => `<li>${l}</li>`).join("")}</ul>
     </div>
@@ -435,27 +292,22 @@ $("#situations").addEventListener("click", (e) => {
 
 // DOCUMENT GENERATOR
 function renderDocForm(docKey) {
-  currentDoc = docKey;
-  const doc = DOC_TEMPLATES[docKey];
-  if (!doc) return;
-
-  const form = $("#doc-form");
-  form.innerHTML = doc.fields.map(f => `
-    <div class="form-group">
-      <label for="field_${f.id}">${f.label}</label>
-      <input type="${f.type}" id="field_${f.id}" name="${f.id}" placeholder="${f.placeholder}" autocomplete="off" />
-    </div>
-  `).join("");
-
-  document.querySelectorAll(".doc-tab-btn").forEach(tab => {
-    tab.classList.toggle("active", tab.dataset.doc === docKey);
-  });
-
-  updateDocPreview();
-
-  form.querySelectorAll("input").forEach(input => {
-    input.addEventListener("input", updateDocPreview);
-  });
+ if (!DOC_TEMPLATES[docKey]) return;
+ if (document.querySelector('#doc-form input, #doc-form select, #doc-form textarea')) docDrafts[currentDoc] = getFormData();
+ currentDoc=docKey; const doc=DOC_TEMPLATES[docKey], form=$('#doc-form');
+ form.innerHTML=doc.fields.map(f=>{
+ const attrs=`id="field_${f.id}" name="${f.id}"`;
+ const input=f.type==='select'?`<select ${attrs}>${f.options.map(([v,t])=>`<option value="${escapeHtml(v)}">${escapeHtml(t)}</option>`).join('')}</select>`:
+ f.type==='textarea'?`<textarea ${attrs} rows="3" maxlength="5000" placeholder="${escapeHtml(f.placeholder||'')}"></textarea>`:
+ `<input ${attrs} type="${f.type||'text'}" maxlength="500" placeholder="${escapeHtml(f.placeholder||'')}" autocomplete="off" />`;
+ return `<div class="form-group"><label for="field_${f.id}">${escapeHtml(f.label)}</label>${input}</div>`;
+ }).join('');
+ const saved=docDrafts[docKey]||{};
+ form.querySelectorAll('input,select,textarea').forEach(el=>{if(saved[el.name]!==undefined)el.value=saved[el.name];el.addEventListener('input',updateDocPreview);el.addEventListener('change',updateDocPreview);});
+ document.querySelectorAll('.doc-tab-btn').forEach(t=>t.classList.toggle('active',t.dataset.doc===docKey));
+ $('#doc-title').textContent=doc.title;
+ $('#doc-guidance').innerHTML=`<p>${escapeHtml(doc.note||'Bu boshlang‘ich namuna. Holat, rekvizitlar va ilovalarni to‘liq tekshiring.')}</p>${(doc.sources||[]).map((u,i)=>`<a href="${u}" target="_blank" rel="noopener">Qonuniy asos ${i+1} ↗</a>`).join(' · ')}`;
+ updateDocPreview();
 }
 
 function getFormData() {
@@ -469,7 +321,10 @@ function updateDocPreview() {
   const doc = DOC_TEMPLATES[currentDoc];
   if (!doc) return;
   const data = getFormData();
-  const text = doc.generate(data);
+  const blocked=doc.block?.(data);
+  const text = blocked || doc.generate(data);
+  ["#btn-copy-doc","#btn-download-doc","#btn-print-doc"].forEach(id=>$(id).disabled=!!blocked);
+  $("#doc-paper").classList.toggle('blocked',!!blocked);
   $("#doc-paper").textContent = text;
   const note = $("#doc-desc");
   if (note) note.textContent = doc.desc;
@@ -515,7 +370,7 @@ $("#btn-print-doc").addEventListener("click", () => {
   const d = frame.contentDocument;
   d.open();
   d.write(`<!doctype html><html lang="uz"><head><meta charset="utf-8"><title>${escapeHtml(DOC_TEMPLATES[currentDoc]?.title || "Hujjat")}</title>
-<style>@page{margin:18mm}body{margin:0;font:12pt/1.6 Georgia,"Times New Roman",serif;color:#000}pre{white-space:pre-wrap;font:inherit;margin:0}</style>
+<style>@page{margin:18mm}body{margin:0;font:12pt/1.5 "Times New Roman",serif;color:#000}pre{white-space:pre-wrap;font:inherit;margin:0}</style>
 </head><body><pre>${escapeHtml(text)}</pre></body></html>`);
   d.close();
   frame.contentWindow.focus();
@@ -532,7 +387,7 @@ document.addEventListener("click", (e) => {
 });
 
 $("#hero-chips").addEventListener("click", (e) => { if (e.target.tagName === "BUTTON") ask(e.target.textContent); });
-$("#hero-ask").addEventListener("submit", (e) => { e.preventDefault(); const v = $("#hero-input").value.trim(); if (v) { $("#hero-input").value = ""; ask(v); } });
+$("#hero-ask").addEventListener("submit", (e) => { e.preventDefault(); if(busy) return; const v = $("#hero-input").value.trim(); if (v) { $("#hero-input").value = ""; ask(v); } });
 
 function setMode(m) {
   mode = m;
@@ -549,11 +404,13 @@ function refreshApiStatus() {
   $("#api-model-name").textContent = "Server orqali";
 }
 
-$("#btn-config-api").addEventListener("click", () => modalSettings.classList.remove("hidden"));
+$("#btn-config-api").addEventListener("click", () => { modalSettings.classList.remove("hidden"); $('#btn-close-settings').focus(); });
+function closeSettings(){modalSettings.classList.add('hidden');$('#btn-config-api').focus();}
+document.addEventListener('keydown', e=>{if(modalSettings.classList.contains('hidden'))return;if(e.key==='Escape')closeSettings();if(e.key==='Tab'){const controls=[...modalSettings.querySelectorAll('button,a[href],input,select,textarea,[tabindex="0"]')];const first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
 modalSettings.addEventListener("click", (e) => {
-  if (e.target === modalSettings) modalSettings.classList.add("hidden");
+  if (e.target === modalSettings) closeSettings();
 });
-$("#btn-close-settings")?.addEventListener("click", () => modalSettings.classList.add("hidden"));
+$("#btn-close-settings")?.addEventListener("click", closeSettings);
 
 // NEW CHAT
 $("#new-chat").addEventListener("click", () => {
@@ -602,7 +459,7 @@ const MAX_HISTORY = 20;
 const MAX_INPUT_CHARS = 4000;
 const MAX_TOTAL_CHARS = 28000;
 function historyForRequest() {
-  let list = history.slice(-MAX_HISTORY);
+  let list = history.slice(-MAX_HISTORY).map(m=>({...m,content:m.content.length>7500?m.content.slice(0,7400)+'\n[Oldingi javob konteksti qisqartirildi]':m.content}));
   while (list.length && (list[0].role !== "user" ||
          list.reduce((n, m) => n + m.content.length, 0) > MAX_TOTAL_CHARS)) {
     list = list.slice(1);
@@ -612,10 +469,14 @@ function historyForRequest() {
 
 // ASK FUNCTION — barcha AI so'rovlari server backend orqali yuboriladi.
 async function ask(text) {
+  if (busy) return;
   show("chat");
   text = String(text || "").trim().slice(0, MAX_INPUT_CHARS);
   if (busy || !text) return;
   busy = true;
+  chatController=new AbortController();
+  const timer=setTimeout(()=>chatController?.abort(),65000);
+  $('#chat-stop').hidden=false;
   $("#send-btn").disabled = true;
   history.push({ role: "user", content: text });
   addMsg("user", text);
@@ -627,7 +488,7 @@ async function ask(text) {
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: historyForRequest(), mode })
+      body: JSON.stringify({ messages: historyForRequest(), mode }), signal: chatController.signal
     });
 
     if (!res.ok || !res.body) {
@@ -650,17 +511,19 @@ async function ask(text) {
     }
     answer += dec.decode();
     if (!answer.trim()) throw new Error("AI bo'sh javob qaytardi.");
+    bubble.innerHTML = md(answer);
     history.push({ role: "assistant", content: answer });
   } catch (err) {
-    const safeMessage = err instanceof Error ? err.message : "Noma'lum xatolik";
+    const safeMessage = err?.name==='AbortError'?'So‘rov to‘xtatildi yoki kutish vaqti tugadi.':(err instanceof Error ? err.message : "Noma'lum xatolik");
     bubble.innerHTML = md(
-      "⚠️ **AI javobini olishda xatolik yuz berdi.**\n\n" +
+      (answer?answer+"\n\n":"")+"⚠️ **AI javobini olishda xatolik yuz berdi.**\n\n" +
       safeMessage +
       "\n\nBirozdan keyin qayta urinib ko'ring. " +
       "Huquqiy normaning amaldagi tahririni [Lex.uz](https://lex.uz) orqali tekshiring."
     );
     history.pop();
   } finally {
+    clearTimeout(timer);chatController=null;$('#chat-stop').hidden=true;
     busy = false;
     $("#send-btn").disabled = false;
   }
@@ -668,6 +531,7 @@ async function ask(text) {
 
 $("#composer").addEventListener("submit", (e) => {
   e.preventDefault();
+  if(busy) return;
   const v = $("#chat-input").value.trim();
   $("#chat-input").value = "";
   ask(v);
@@ -676,12 +540,19 @@ $("#chat-input").addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#composer").requestSubmit(); }
 });
 
+$('#doc-form').addEventListener('submit', e=>e.preventDefault());
 // INITIALIZE
 renderSituations();
-renderDocForm("ish_haqi");
+const preferred=['nikoh_ajrashish','aliment_sud','jarima_shikoyat','firibgarlik','ish_haqi','istemol_da_vo','ijara_shartnoma','mehnat_boshash'];
+$('#doc-tabs').innerHTML=preferred.map((key,i)=>`<button type="button" class="doc-tab-btn" data-doc="${key}"><span class="tab-num">${String(i+1).padStart(2,'0')}</span>${escapeHtml(DOC_TEMPLATES[key].short||DOC_TEMPLATES[key].title)}</button>`).join('');
+renderDocForm('nikoh_ajrashish');
 refreshApiStatus();
 
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 }
+
+$('#chat-stop').addEventListener('click',()=>chatController?.abort());
+function routeHash(){const key=location.hash.slice(1);if(['chat','kazus','explain'].includes(key))show(key,false);else {show('home',false);if(key)document.getElementById(key)?.scrollIntoView();}}
+window.addEventListener('hashchange',routeHash);routeHash();

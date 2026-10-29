@@ -99,12 +99,12 @@ function wireTabs(tabs, panels, onChange) {
   const TYPE_LABEL = { qonun: "Qonun", farmon: "Farmon", qaror: "Qaror", buyruq: "Buyruq", boshqa: "Hujjat" };
 
   function typeOf(item) {
-    const o = norm(`${item.organ} ${item.title}`);
-    if (/qonuni\b|qonun$/.test(norm(item.organ))) return "qonun";
-    if (/farmoni/.test(o)) return "farmon";
-    if (/buyrug/.test(o)) return "buyruq";
-    if (/qarori|qarorlari/.test(o)) return "qaror";
-    return "boshqa";
+    const o=norm(item.organ||'');
+    if (/qonun(i)?\b|o'rq|o‘rq/.test(o)) return 'qonun';
+    if (/farmon|pf[-–]/.test(o)) return 'farmon';
+    if (/buyru|prikaz/.test(o)) return 'buyruq';
+    if (/qaror|pq[-–]|postanovlen/.test(o)) return 'qaror';
+    return 'boshqa';
   }
 
   // "Oʻzbekiston Respublikasi ... vazirligining qarori" -> qisqaroq organ nomi
@@ -135,7 +135,7 @@ function wireTabs(tabs, panels, onChange) {
         </div>
         <div class="news-eff">
           <span class="news-date-label">Kuchga kiradi</span>
-          <time>${escapeHtml(it.effective || "—")}</time>
+          <time>${escapeHtml(it.effective || "—")}</time>${it.archive?`<small class="archive-label">Zaxira: ${escapeHtml(it.archive)}</small>`:""}
         </div>
       </li>`).join("");
     more.hidden = filtered.length <= shown;
@@ -152,7 +152,7 @@ function wireTabs(tabs, panels, onChange) {
   more?.addEventListener("click", () => { shown += PAGE; render(); });
 
   async function load(url) {
-    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    const res = await fetch(url, { headers: { Accept: "application/json" }, signal:AbortSignal.timeout(18000) });
     if (!res.ok) throw new Error(String(res.status));
     const data = await res.json();
     if (!Array.isArray(data.items) || !data.items.length) throw new Error("empty");
@@ -172,9 +172,11 @@ function wireTabs(tabs, panels, onChange) {
       list.innerHTML = `<li class="news-empty">Yangiliklarni yuklab bo'lmadi. <a href="https://lex.uz" target="_blank" rel="noopener">lex.uz</a> da ko'ring.</li>`;
       return;
     }
-    items = data.items.map((it) => ({ ...it, type: typeOf(it) }));
+    items = data.items.filter(it=>{try{return /^https:$/.test(new URL(it.url).protocol)&&['lex.uz','www.lex.uz'].includes(new URL(it.url).hostname)}catch{return false}}).map(it=>({...it,type:typeOf(it),archive:live?null:data.updated}));
+    if(live){try{const backup=await load('data/news.json');const present=new Set(items.map(it=>it.type));const urls=new Set(items.map(it=>it.url));items.push(...backup.items.filter(it=>!present.has(typeOf(it))&&!urls.has(it.url)&&/^https:\/\/(www\.)?lex\.uz\//.test(it.url)).map(it=>({...it,type:typeOf(it),archive:backup.updated})));}catch{}}
+    filters.querySelectorAll('[data-type]').forEach(b=>{const n=b.dataset.type==='all'?items.length:items.filter(it=>it.type===b.dataset.type).length;const label=b.dataset.type==='all'?'Barchasi':({qonun:'Qonunlar',farmon:'Farmonlar',qaror:'Qarorlar',buyruq:'Buyruqlar'})[b.dataset.type];b.textContent=`${label} (${n})`;});
     if (sourceEl) {
-      const when = live ? "avtomatik yangilanadi" : `${escapeHtml(data.updated || "")} holatiga`;
+      const when = live ? `oxirgi yuklash: ${escapeHtml(data.updated||"")} (ayrim turlar zaxiradan)` : `${escapeHtml(data.updated || "")} holatiga`;
       sourceEl.innerHTML = `Manba: <a href="https://lex.uz" target="_blank" rel="noopener">lex.uz</a> rasmiy RSS lentasi · ${when}.`;
     }
     render();

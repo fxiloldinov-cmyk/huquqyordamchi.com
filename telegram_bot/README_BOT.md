@@ -1,39 +1,28 @@
-# Huquq Kutubxonasi — Telegram Botini Ishga Tushirish Qo'llanmasi
+# HuquqYordamchi Telegram boti
 
-Ushbu bot O'zbekiston qonunlari bo'yicha fuqarolarga va talabalarga maslahat beruvchi, hayotiy vaziyatlar bo'yicha qadam-baqadam yo'l-yo'riq ko'rsatuvchi va AI yordamida savollarga umumiy ma'lumot beruvchi AI axborot botidir (rasmiy davlat boti emas).
+Bot sayt bilan bir xil `../data/legal.json` katalogidan foydalanadi. `telegram_bot` papkasini alohida ajratib ko‘chirmang; loyiha tuzilmasini saqlang.
 
----
+Python 3.11 yoki yangiroq muhitda:
 
-## 🚀 3 daqiqada ishga tushirish:
+```bash
+cd telegram_bot
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt
+python bot.py
+```
 
-### 1-qadam: Bot Token olish
-1. Telegram'da **@BotFather** botini qidiring va kiring.
-2. `/newbot` buyrug'ini yuboring.
-3. Botingizga nom (masalan: `Mening Huquq Boti`) va username (masalan: `huquq_yordamchi_bot`) bering.
-4. BotFather sizga uzun token beradi (masalan: `7123456789:AAH...`).
+Ishga tushirishdan oldin shu papkada `.env` yarating:
 
-### 2-qadam: Tokenni kiritish
-1. Ushbu papkadagi `.env` faylini Bloknot (Notepad) orqali oching.
-2. Tokenni quyidagicha yozib saqlang:
-   ```env
-   TELEGRAM_BOT_TOKEN=7123456789:AAHxxxxxxxxxxxxxxxxxxxx
-   GEMINI_API_KEY=AIzaxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   ```
-   *(Gemini API kalitini [aistudio.google.com](https://aistudio.google.com/app/apikey) saytidan bepul olishingiz mumkin).*
+```env
+TELEGRAM_BOT_TOKEN=
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-2.5-flash
+```
 
-### 3-qadam: Ishga tushirish
-* Shunchaki **`run_bot.bat`** faylini sichqoncha bilan 2 marta bosing!
-* Kutubxonalar avtomatik o'rnatiladi va botingiz Telegram'da ishga tushadi.
+Telegram tokenini @BotFather orqali, Gemini kalitini o‘zingizning provayder hisobingizdan oling. Haqiqiy kalitlarni ommaviy repozitoriyga yoki arxivga qo‘shmang. Windows uchun `run_bot.bat` ham saqlangan.
 
----
+Bot mustaqil jarayon sifatida ishlaydi; Netlify sayt deploy’i uni ishga tushirmaydi. AI uchun Google qidiruvi, 50 soniyalik kutish chegarasi va bir vaqtda ko‘pi bilan 4 chaqiruv bor. Har bir foydalanuvchi uchun 5/minut va 30/soat in-memory chegara qo‘llanadi; restart yoki bir nechta bot instance’i uchun bu umumiy kvota emas.
 
-## 📱 Bot imkoniyatlari:
-- 💼 **Hayotiy vaziyatlar:** Mehnat, jarima, aliment, meros, kredit, ijara, tovar qaytarish bo'yicha tayyor tugmalar.
-- 📜 **Kodekslar:** Barcha asosiy O'zbekiston kodekslari va ularning lex.uz rasmiy havolalari.
-- 🤖 **AI Yurist:** Foydalanuvchi yozgan har qanday matnli savolga o'zbek tilida umumiy huquqiy ma'lumot berish (lex.uz da tekshirish tavsiyasi bilan).
-
----
-
-## 🔐 Xavfsizlik
-- `.env` faylini hech qachon GitHub'ga yoki saytga yuklamang (`.gitignore` da bloklangan).
-- Bot sayt (`public/`) papkasidan tashqarida turadi, shuning uchun Netlify uni deploy qilmaydi.
+Savollar Gemini xizmatiga yuboriladi. Huquqiy javob va manbalarni mustaqil tekshiring. Ushbu paket tayyorlanayotganda haqiqiy Telegram/Gemini kalitlari bilan jonli sinov bajarilmadi.
