@@ -169,3 +169,11 @@ Tekshiruv lex.uz (rasmiy matn va mundarija), gov.uz/advice.uz (davlat portali) v
 - `maxOutputTokens`: chat 4096, qidiruv 4096, kazus 12000 (Gemini 2.5 "thinking" tokenlari ham shu limitga kiradi).
 - Netlify'dagi mavjud `API_KEY` o'zgaruvchisi zaxira sifatida o'qiladi: `GEMINI_API_KEY || API_KEY`.
 - AI xato xabarlari aniqroq: HTTP kodi va Google xato turi ko'rsatiladi (masalan, "kod: 400 API_KEY_INVALID"); kalit va ichki matn qaytarilmaydi. To'liq sabab Netlify function loglarida.
+
+
+## V9 — yangi dizayn va lex.uz yangiliklari (2026-10-29)
+- Dizayn qayta ishlandi (lexora.uz kabi tinch, premium uslub): serifli sarlavhalar (Newsreader), Onest asosiy shrift, to'q yashil aksent, kunduzgi va tungi rejim (tizim sozlamasi + almashtirish tugmasi).
+- Tuzilma: tepada bitta qidiruv konsoli ("Moddalarni topish" / "AI'dan so'rash"), raqamlar qatori, imkoniyatlar tablari, vaziyatlar ro'yxati, lex.uz yangiliklari, hujjat namunalari, kodekslar, talabalar bandi, FAQ, to'liq footer.
+- Uchta alohida qidiruv maydoni bittaga birlashtirildi; tushunarsiz kodeks qisqartmalari va emoji tugmalar olib tashlandi; mobil menyu qo'shildi.
+- `/api/news`: lex.uz/rss ni o'qib JSON qaytaradi, Netlify CDN'da 6 soat (+24 soat stale) keshlanadi; xato bo'lsa frontend `data/news.json` (129 ta hujjat, 2026-10-28 holati) ni ko'rsatadi. Faqat lex.uz havolalari qabul qilinadi.
+- Sinov: Playwright — kompyuter va telefon kengligi, kunduzgi/tungi rejim, yangiliklar filtri va "Yana ko'rsatish", tablar, aqlli qidiruv va kazus oqimi; gorizontal scroll yo'q, konsol xatolari yo'q.

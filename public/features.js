@@ -371,10 +371,10 @@ kazusForm?.addEventListener("submit", async (e) => {
 
 kazusCopy?.addEventListener("click", () => {
   navigator.clipboard.writeText(kazusAnswer).then(() => {
-    kazusCopy.textContent = "✅ Nusxa olindi";
+    kazusCopy.textContent = "Nusxa olindi";
   }).catch(() => {
-    kazusCopy.textContent = "⚠️ Nusxa olinmadi";
-  }).finally(() => setTimeout(() => { kazusCopy.textContent = "📋 Nusxa olish"; }, 2000));
+    kazusCopy.textContent = "Nusxa olinmadi";
+  }).finally(() => setTimeout(() => { kazusCopy.textContent = "Nusxa olish"; }, 2000));
 });
 
 loadNamunalar();

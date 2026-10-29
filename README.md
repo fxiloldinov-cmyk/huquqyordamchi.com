@@ -1,4 +1,4 @@
-# Huquq Kutubxonasi — O'zbekiston qonunlari va AI yordamchi (v5)
+# Huquq Kutubxonasi — O'zbekiston qonunlari va AI yordamchi (v9)
 
 [uzbekistan-law-library.netlify.app](https://uzbekistan-law-library.netlify.app) saytining manba kodlari.
 
@@ -14,10 +14,13 @@ public/                    ← faqat shu papka internetga joylanadi
   styles.css               dizayn
   app.js                   vaziyatlar, kodekslar, hujjat namunalari, AI chat
   features.js              aqlli qidiruv va kazus ustaxonasi
+  ui.js                    tungi rejim, mobil menyu, tablar, lex.uz yangiliklari
+  data/news.json           yangiliklar uchun zaxira ro'yxat (lex.uz ishlamasa)
 netlify/functions/
   chat.mjs                 /api/chat   — AI konsultant
   search.mjs               /api/search — aqlli qidiruv (gap bo'yicha qonun va moddalar)
   kazus.mjs                /api/kazus  — kazus ustaxonasi
+  news.mjs                 /api/news   — lex.uz RSS yangiliklari (6 soat keshlanadi)
 netlify/shared/
   common.mjs               umumiy kod: Origin, rate limit, Gemini, lex.uz havolalari
   kazus-namunalar.mjs      ← o'qituvchilar tasdiqlagan namunaviy yechimlar shu yerga qo'shiladi

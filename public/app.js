@@ -369,24 +369,19 @@ function renderSituations(filter = "") {
   const list = SITUATIONS.filter(s => norm(`${s.title} ${s.desc} ${s.tag}`).includes(f));
   
   if (list.length === 0) {
-    $("#situations").innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">Bunday vaziyat topilmadi. AI yordamchidan bevosita so'rab ko'rishingiz mumkin.</p>`;
+    $("#situations").innerHTML = `<p class="empty-note">Bunday vaziyat topilmadi. Yuqoridagi aqlli qidiruvga vaziyatingizni yozib ko'ring.</p>`;
     return;
   }
 
   $("#situations").innerHTML = list.map((s) => `
-    <button class="sit-card" data-sit="${s.id}">
-      <div>
-        <div class="sit-card-top">
-          <div class="sit-icon-wrap">${getSvgIcon(s.icon)}</div>
-          <span class="sit-tag">${s.tag}</span>
-        </div>
-        <h3>${s.title}</h3>
-        <p>${s.desc}</p>
-      </div>
-      <div class="sit-card-footer">
-        <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted);">Qadamlar va moddalar</span>
-        <span class="sit-arrow">→</span>
-      </div>
+    <button type="button" class="sit-card" data-sit="${s.id}">
+      <span class="sit-icon-wrap" aria-hidden="true">${getSvgIcon(s.icon)}</span>
+      <span class="sit-body">
+        <span class="sit-tag">${escapeHtml(s.tag)}</span>
+        <span class="sit-title">${escapeHtml(s.title)}</span>
+        <span class="sit-desc">${escapeHtml(s.desc)}</span>
+      </span>
+      <span class="sit-arrow" aria-hidden="true">→</span>
     </button>
   `).join("");
 }
@@ -398,17 +393,16 @@ $("#sit-search").addEventListener("input", (e) => {
 
 // RENDER CODES
 $("#codes").innerHTML = CODES.map(([n, t, d, id]) => `
-  <div class="code-card">
-    <div class="code-badge">${n}</div>
+  <article class="code-card">
     <div class="code-info">
-      <h3>${t}</h3>
-      <p>${d}</p>
-      <div class="code-links">
-        <a href="${lexUrl(id, t)}" target="_blank" rel="noopener">Rasmiy matn ↗</a>
-        <button type="button" data-ask="${escapeHtml(t)} haqida oddiy tilda tushuntirib bering: u nimalarni tartibga soladi va oddiy fuqaro uchun eng muhim 3 ta qoidasi qaysi?">AI tahlili</button>
-      </div>
+      <h3>${escapeHtml(t)}</h3>
+      <p>${escapeHtml(d)}</p>
     </div>
-  </div>
+    <div class="code-links">
+      <a href="${lexUrl(id, t)}" target="_blank" rel="noopener">Rasmiy matn <span aria-hidden="true">↗</span></a>
+      <button type="button" data-ask="${escapeHtml(t)} haqida oddiy tilda tushuntirib bering: u nimalarni tartibga soladi va oddiy fuqaro uchun eng muhim 3 ta qoidasi qaysi?">AI tahlili</button>
+    </div>
+  </article>
 `).join("");
 
 // SITUATION DETAIL VIEW
@@ -417,10 +411,10 @@ function openSituation(id) {
   if (!s) return;
   $("#situation-detail").innerHTML = `
     <div class="detail-header">
-      <div class="sit-icon-wrap" style="width: 52px; height: 52px;">${getSvgIcon(s.icon)}</div>
+      <div class="sit-icon-wrap lg">${getSvgIcon(s.icon)}</div>
       <h1>${s.title}</h1>
     </div>
-    <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 24px;">${s.intro}</p>
+    <p class="detail-intro">${s.intro}</p>
     <div class="verify-note">⚠️ Bu umumiy ma'lumot, yurist tomonidan tasdiqlanmagan. Modda raqamlari, muddatlar, summalar va telefon raqamlarini <a href="https://lex.uz" target="_blank" rel="noopener">lex.uz</a> dagi amaldagi tahrir bilan tekshiring.</div>
     <ul class="steps-list">${s.steps.map(([b, t]) => `<li><b>${b}</b><p>${t}</p></li>`).join("")}</ul>
     <div class="laws-card">
@@ -429,7 +423,7 @@ function openSituation(id) {
     </div>
     <div class="ask-banner">
       <h3>AI huquqshunosdan qo'shimcha so'rang</h3>
-      <div class="chips" style="justify-content: flex-start;">${s.qs.map((q) => `<button type="button" data-ask="${escapeHtml(q)}">${escapeHtml(q)}</button>`).join("")}</div>
+      <div class="chips left">${s.qs.map((q) => `<button type="button" data-ask="${escapeHtml(q)}">${escapeHtml(q)}</button>`).join("")}</div>
     </div>`;
   show("situation");
 }
@@ -490,15 +484,15 @@ $("#btn-copy-doc").addEventListener("click", () => {
   const text = $("#doc-paper").textContent;
   navigator.clipboard.writeText(text).then(() => {
     const btn = $("#btn-copy-doc");
-    btn.textContent = "✅ Nusxa olindi";
-    setTimeout(() => { btn.textContent = "📋 Nusxa olish"; }, 2000);
+    btn.textContent = "Nusxa olindi";
+    setTimeout(() => { btn.textContent = "Nusxa olish"; }, 2000);
   }).catch(() => alertCopyFail());
 });
 
 function alertCopyFail() {
   const btn = $("#btn-copy-doc");
-  btn.textContent = "⚠️ Nusxa olinmadi";
-  setTimeout(() => { btn.textContent = "📋 Nusxa olish"; }, 2000);
+  btn.textContent = "Nusxa olinmadi";
+  setTimeout(() => { btn.textContent = "Nusxa olish"; }, 2000);
 }
 
 $("#btn-download-doc").addEventListener("click", () => {
