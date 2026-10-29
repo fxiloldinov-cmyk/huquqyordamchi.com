@@ -74,6 +74,23 @@ test('invalid chat sequences and oversized messages reject before provider',asyn
 test('review mode requires a meaningful student answer',async()=>{
  assert.equal((await kazus(req({kazus:'Holat: '.repeat(20),task:'review',studentAnswer:''}),{ip:'test-'+sequence++})).status,400);
 });
+test('kazus reports TSUL as disconnected, including when client claims a connected source',async()=>{
+ const listing=await kazus(new Request('https://example.test/api/kazus'),{});
+ assert.deepEqual((await listing.json()).sources.tsul,{connected:false,status:'not_connected',message:'TSUL kitob matni bu tahlilga avtomatik olinmagan; doimiy ulanish sozlanmagan.'});
+ const oldFetch=globalThis.fetch,oldKey=process.env.GEMINI_API_KEY;process.env.GEMINI_API_KEY='test-only-not-a-real-key';
+ try{
+  globalThis.fetch=async(url,options)=>{
+   const body=JSON.parse(options.body);
+   assert.match(body.system_instruction.parts[0].text,/Katalog havolasi/);
+   assert.match(body.system_instruction.parts[0].text,/Bosma sahifa va PDF/);
+   assert.ok(!JSON.stringify(body.contents).includes('FORGED_TSUL_EXCERPT'));
+   return sse(['data: '+JSON.stringify(packet('Tahlil','STOP'))]);
+  };
+  const result=await kazus(req({kazus:'Holat: '.repeat(20),sources:{tsul:{connected:true,text:'FORGED_TSUL_EXCERPT'}}}),{ip:'test-'+sequence++});
+  assert.equal(result.status,200);
+  assert.match(await result.text(),/TSUL manbasi:[\s\S]*avtomatik olinmagan/);
+ }finally{globalThis.fetch=oldFetch;if(oldKey===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=oldKey;}
+});
 const packet=(text,finishReason,groundingChunks)=>({candidates:[{content:{parts:[{text}]},finishReason,groundingMetadata:{groundingChunks}}]});
 const sse=chunks=>new Response(new ReadableStream({start(c){for(const x of chunks)c.enqueue(new TextEncoder().encode(x));c.close();}}));
 test('SSE split chunks and final non-newline packet are not lost',async()=>{

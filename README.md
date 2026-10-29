@@ -64,6 +64,10 @@ Vaziyat sanasiga mos kuchga kirgan tahrirni tanlang. Katalog to‘liq normativ b
 
 ## Tuzilma va tekshiruv
 
-`public/` — brauzer interfeysi; `netlify/functions/` — API; `netlify/shared/` — umumiy himoya va AI oqimi; `data/` — yagona katalog; `scripts/` — build va lokal server; `tests/` — 20 ta regressiya testi; `telegram_bot/` — alohida bot.
+`public/` — brauzer interfeysi; `netlify/functions/` — API; `netlify/shared/` — umumiy himoya va AI oqimi; `data/` — yagona katalog; `scripts/` — build va lokal server; `tests/` — 21 ta regressiya testi; `telegram_bot/` — alohida bot.
+
+## TSUL kitoblari
+
+TSUL Digital orqali brauzerda kirish va kitob matnini o'qish tekshirildi. Serverdan avtomatik olish hali ulanmagan; `/api/kazus` bu holatni ochiq qaytaradi va tahlil oxirida ko'rsatadi. Kitob iqtibosi va sahifalarini uydirmaslik qoidalari qo'shildi. Maxfiy kirish ma'lumotlari loyihaga kiritilmagan. Tekshiruv dalillari va doimiy ulanish shartlari [TSUL_INTEGRATION_UZ.md](TSUL_INTEGRATION_UZ.md) da.
 
 `TECHNICAL_REVIEW_UZ.md` da tuzatilgan muammolar va qolgan cheklovlar yozilgan. Botning sozlash yo‘riqnomasi `telegram_bot/README_BOT.md` da. Hero rasmi ushbu loyiha uchun AI yordamida yaratilgan.

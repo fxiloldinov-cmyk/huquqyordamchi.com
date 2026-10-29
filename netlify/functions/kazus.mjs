@@ -15,6 +15,13 @@ export const config = {
 
 const MAX_KAZUS = 6000;
 const MAX_FORMAT = 6000;
+// Brauzerdagi shaxsiy sessiya server ulanishi degani emas. Ruxsatli retriever
+// ishga tushmaguncha kitob matni olinganini hech qayerda da'vo qilmaymiz.
+const TSUL_STATUS = Object.freeze({
+  connected: false,
+  status: "not_connected",
+  message: "TSUL kitob matni bu tahlilga avtomatik olinmagan; doimiy ulanish sozlanmagan.",
+});
 
 const SYSTEM = LEGAL_RULES + `Siz O'zbekiston Respublikasi huquqi bo'yicha universitet o'qituvchisi darajasidagi o'quv yordamchisiz.
 Talaba yuborgan kazusni (huquqiy masalani) yechasiz.
@@ -33,6 +40,15 @@ Qat'iy qoidalar:
 - Iqtiboslar uchun [1], [2] ko'rinishidagi izohlardan foydalanish mumkin; izohlar va "Foydalanilgan adabiyotlar" ro'yxatini javob oxirida bering.
 - Adabiyotlar ro'yxatiga faqat haqiqatan mavjud ekaniga ishonchingiz komil bo'lgan manbalarni yozing. Darslik yoki sharh muallifi, yili, nashriyotini aniq bilmasangiz, ularni yozmang — faqat normativ-huquqiy hujjatlarni keltiring.`;
 
+const BOOK_SOURCE_RULES = `
+Kitob manbalari bo'yicha qo'shimcha qat'iy qoidalar:
+- Ushbu serverga TSUL hisobidan olingan tasdiqlangan kitob parchalari ulanmagan. TSUL hisobiga kirdim yoki yopiq kitobni o'qidim deb yozmang.
+- Katalog havolasi, kitob nomi yoki qidiruv tavsifi kitob matni o'qilganiga dalil emas. Faqat shularga asoslanib kitobdan iqtibos, sahifa yoki muallif xulosasini keltirmang.
+- Ochiq manbada haqiqatan mavjud, vaziyatga mos parcha bo'lsa, uni ko'rib chiqing; manbaning cheklovlarini ayting. Talaba bergan parchani mustaqil tasdiqlangan manba deb ko'rsatmang.
+- Iqtibos va sahifa raqamini uydirmang. Bosma sahifa va PDF tartib raqamini farqlang; bosma raqam ko'rinmasa, faqat tasdiqlangan PDF sahifasini belgilang.
+- Darslikdagi qoidani voqea sanasida amal qilgan qonun tahriri bilan solishtiring. Nashr yili amaldagi tahrir isboti emas. Manba yoki tahrir yetishmasa, buni ochiq ayting.
+- Login, parol yoki sessiya tokenini so'ramang va javobga yozmang.`;
+
 function sanitize(s, n) {
   return typeof s === "string" ? s.replace(/\r\n/g, "\n").trim().slice(0, n) : "";
 }
@@ -43,6 +59,7 @@ function listResponse() {
       id: n.id, title: n.title, fan: n.fan, fanNomi: FANLAR[n.fan] || n.fan, muallif: n.muallif || null,
     })),
     fanlar: FANLAR,
+    sources: { tsul: TSUL_STATUS },
   });
 }
 
@@ -98,7 +115,7 @@ export default async (req, context) => {
   const request = (withSearch) => callGemini({
     apiKey, model, stream: true, signal: req.signal,
     body: {
-      system_instruction: { parts: [{ text: SYSTEM }] },
+      system_instruction: { parts: [{ text: SYSTEM + BOOK_SOURCE_RULES }] },
       contents,
       ...(withSearch ? { tools: [{ google_search: {} }] } : {}),
       generationConfig: { temperature: 0.2, maxOutputTokens: 12000 },
@@ -112,7 +129,7 @@ export default async (req, context) => {
     if (!upstream.body) return jsonError("AI xizmatidan javob oqimi kelmadi.", 502);
 
     return pipeGeminiStream(upstream, {
-      onEnd: (sources) => sourceTail(sources) + "\n\n*O‘quv tahlili. Topshirishdan oldin manbalar va topshiriq talablarini tekshiring.*",
+      onEnd: (sources) => sourceTail(sources) + `\n\n**TSUL manbasi:** ${TSUL_STATUS.message}` + "\n\n*O‘quv tahlili. Topshirishdan oldin manbalar va topshiriq talablarini tekshiring.*",
     });
   } catch (e) {
     console.error("Kazus backend error:", e?.name || "unknown");
